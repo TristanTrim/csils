@@ -27,10 +27,11 @@ display_rate = .2
 convo_rate = .01
 running = True
 default_conf_file = "conf"
+main_curr=0
 
 #menu vars
 info={
-        "help":lambda:"q-quit(global) c-config",
+        "help":lambda:"q-quit(global) c-config %8d"%count,
         "config":lambda:"c-connect n-name p-port b-baud m-main",
         "conf":lambda:str(conf),
         "connect":lambda:"1-{} 2-{} a-all c-cancel".format(
@@ -49,13 +50,13 @@ for line in logfile:
 logfile.close()
 
 def updateDisplay():
-    global curr_info, curr_mode, convo_log
+    global curr_info, curr_mode, convo_log, main_curr
     #clear
     print("\033[F\033[K"*lines,end="")
     print(info[curr_info]())
     if(curr_mode=="main"):
         for ii,line in enumerate(convo_log):
-            if ii == 1:
+            if ii == main_curr:
                 print("\033[1;37m",end="")#white
             else:
                 print("\033[0;37m",end="")#grey
@@ -63,7 +64,7 @@ def updateDisplay():
             print(outputLine[:columns])
         print("\033[0;37m",end="")#grey
         for ii in range(lines-1-len(convo_log)):
-            print("%8d"%count,"foo")
+            print("...")
     elif(curr_mode=="config"):
         print(" ",conf["dev1"])
         print(" ",conf["dev2"])
@@ -128,6 +129,14 @@ try:
             if(inp==b"c"):
                 curr_info="config"
                 curr_mode="config"
+            elif(inp==b"j"):
+                main_curr+=1
+                if(main_curr==len(convo_log)):
+                    main_curr=len(convo_log)-1
+            elif(inp==b"k"):
+                main_curr-=1
+                if(main_curr==-1):
+                    main_curr=0
         elif curr_mode=="config":
             if(inp==b"c"):
                 prev_info=curr_info
