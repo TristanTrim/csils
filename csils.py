@@ -28,16 +28,20 @@ convo_rate = .01
 running = True
 default_conf_file = "conf"
 main_curr=0
+entry_buf=""
+tags=[]
 
 #menu vars
 info={
-        "help":lambda:"q-quit(global) c-config %8d"%count,
+        "main":lambda:"q-quit(global) c-config t-tags  %8d"%count,
         "config":lambda:"c-connect n-name p-port b-baud m-main",
         "conf":lambda:str(conf),
         "connect":lambda:"1-{} 2-{} a-all c-cancel".format(
                         conf["dev1"][0], conf["dev2"][0]),
+        "tags":lambda:"n-new d-delete",
+        "newtag":lambda:entry_buf,
         }
-curr_info="help"
+curr_info="main"
 curr_mode="main"
 
 #load default conf
@@ -54,7 +58,7 @@ def updateDisplay():
     #clear
     print("\033[F\033[K"*lines,end="")
     print(info[curr_info]())
-    if(curr_mode=="main"):
+    if(curr_mode=="main" or curr_mode=="tags"):
         for ii,line in enumerate(convo_log):
             if ii == main_curr:
                 print("\033[1;37m",end="")#white
@@ -93,7 +97,7 @@ displayThread.start()
 ## Convo ##
 ###########
 def convoLoop():
-    global running, count, convo_log
+    global running, count, convo_log, tags
     try:
         tags=['unknown']
         lastTime=time()
@@ -142,6 +146,9 @@ try:
                 main_curr-=1
                 if(main_curr==-1):
                     main_curr=0
+            elif(inp==b"t"):
+                curr_mode="tags"
+                curr_info="tags"
         elif curr_mode=="config":
             if(inp==b"c"):
                 prev_info=curr_info
@@ -162,8 +169,22 @@ try:
             elif(inp==b"b"):
                 pass
             elif(inp==b"m"):
-                curr_info="help"
+                curr_info="main"
                 curr_mode="main"
+        elif curr_mode=="tags":
+            if(inp==b"n"):
+                curr_info="newtag"
+                entry_buf=""
+                while True:
+                    inp=msvcrt.getch()
+                    if(inp==b"\r"):#enter
+                        tags+=[entry_buf]
+                        curr_mode=curr_info="main"
+                        break
+                    elif(inp==b"\x08"):#backspace
+                        entry_buf=entry_buf[:-1]
+                    else:
+                        entry_buf+=inp.decode("utf-8")
 except Exception:
     print(traceback.format_exc())
     running=False
