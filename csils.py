@@ -1,12 +1,16 @@
 
+import serial
 
 import traceback
-import serial
 import threading
-from time import sleep
+from time import sleep, time
 import subprocess
 import msvcrt # needs unix portablility
 import json
+
+# get the size of the terminal
+import os
+rows, columns = (int(x) for x in os.popen('stty size', 'r').read().split())
 
 # terminal line control hack
 _=subprocess.call("",shell=True)
@@ -15,7 +19,6 @@ _=subprocess.call("",shell=True)
 count = 0
 dev1=None
 dev2=None
-convo_log=[]
 
 # config vars
 lines = 13
@@ -30,13 +33,20 @@ info={
         "help":lambda:"q-quit(global) c-config",
         "config":lambda:"c-connect n-name p-port b-baud m-main",
         "conf":lambda:str(conf),
-        "connect":lambda:"1-dev1 2-dev2 a-all c-cancel",
+        "connect":lambda:"1-{} 2-{} a-all c-cancel".format(
+                        conf["dev1"][0], conf["dev2"][0]),
         }
 curr_info="help"
 curr_mode="main"
 
 #load default conf
 conf=json.load(open("conf",'r'))
+#load log
+convo_log=[]
+logfile=open(conf["log"],'r+')
+for line in logfile:
+    convo_log+=[json.loads(line)]
+logfile.close()
 
 def updateDisplay():
     global curr_info, curr_mode, convo_log
@@ -44,8 +54,14 @@ def updateDisplay():
     print("\033[F\033[K"*lines,end="")
     print(info[curr_info]())
     if(curr_mode=="main"):
-        for line in convo_log:
-            print(line)
+        for ii,line in enumerate(convo_log):
+            if ii == 1:
+                print("\033[1;37m",end="")#white
+            else:
+                print("\033[0;37m",end="")#grey
+            outputLine=str(line)
+            print(outputLine[:columns])
+        print("\033[0;37m",end="")#grey
         for ii in range(lines-1-len(convo_log)):
             print("%8d"%count,"foo")
     elif(curr_mode=="config"):
@@ -73,12 +89,26 @@ displayThread.start()
 def convoLoop():
     global running, count, convo_log
     try:
+        tags=['unknown']
+        lastTime=time()
         while(running):
             for dev in dev1,dev2:
                 if dev:
                     msg=dev.readline()
                     if len(msg)>0:
-                        convo_log+=[msg]
+                        thisTime=time()
+                        deltaTime=thisTime-lastTime
+                        lastTime=thisTime
+                        new_msg=[
+                                deltaTime,
+                                dev.name,
+                                msg.hex(),
+                                tags]
+                        logfile=open(conf["log"],'a+')
+                        json.dump(new_msg,logfile)
+                        logfile.write('\n')
+                        logfile.close()
+                        convo_log+=[new_msg]
                             # too nested
             count+=1
             sleep(convo_rate)
@@ -124,3 +154,5 @@ except Exception:
     print(traceback.format_exc())
     running=False
 
+#default white text...
+print("\033[1;37m",end="")
