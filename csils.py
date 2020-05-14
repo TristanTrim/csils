@@ -1,5 +1,7 @@
 
 
+import traceback
+import serial
 import threading
 from time import sleep
 import subprocess
@@ -11,6 +13,8 @@ _=subprocess.call("",shell=True)
 
 # data vars
 count = 0
+dev1=None
+dev2=None
 
 # config vars
 lines = 13
@@ -22,9 +26,10 @@ default_conf_file = "conf"
 
 #menu vars
 info={
-        "help":lambda:"q-quit c-config",
-        "config":lambda:"n-name c-comm b-baud m-main",
+        "help":lambda:"q-quit(global) c-config",
+        "config":lambda:"c-connect n-name p-port b-baud m-main",
         "conf":lambda:str(conf),
+        "connect":lambda:"1-dev1 2-dev2 a-all c-cancel",
         }
 curr_info="help"
 curr_mode="main"
@@ -41,8 +46,8 @@ def updateDisplay():
         for ii in range(lines-1):
             print("%8d"%count,"foo")
     elif(curr_mode=="config"):
-        print(conf["dev1"])
-        print(conf["dev2"])
+        print(" ",conf["dev1"])
+        print(" ",conf["dev2"])
         for ii in range(lines-1-2):
             print("%8d"%count,"foo")
 
@@ -68,17 +73,39 @@ convoThread.start()
 
 #UI loop
 while(running):
-    inp=msvcrt.getch()
-    if(inp==b"q"):
+    try:
+        inp=msvcrt.getch()
+        if(inp==b"q"):
+            running=False
+        elif curr_mode=="main":
+            if(inp==b"c"):
+                curr_info="config"
+                curr_mode="config"
+        elif curr_mode=="config":
+            if(inp==b"c"):
+                prev_info=curr_info
+                curr_info="connect"
+                inp=msvcrt.getch()
+                if(inp==b"1"):
+                    dev1=serial.Serial( *conf["dev1"][1] )
+                elif(inp==b"2"):
+                    dev1=serial.Serial( *conf["dev2"][1] )
+                elif(inp==b"a"):
+                    dev1=serial.Serial( *conf["dev1"][1] )
+                    dev1=serial.Serial( *conf["dev2"][1] )
+                curr_info=prev_info
+            elif(inp==b"n"):
+                pass
+            elif(inp==b"p"):
+                pass
+            elif(inp==b"b"):
+                pass
+            elif(inp==b"m"):
+                curr_info="help"
+                curr_mode="main"
+
+    except Exception:
+        tb = traceback.format_exc()   
+        print(tb)
         running=False
-    elif curr_mode=="main":
-        if(inp==b"c"):
-            curr_info="config"
-            curr_mode="config"
-    elif curr_mode=="config":
-        if(inp==b"m"):
-            curr_info="help"
-            curr_mode="main"
-
-
 
