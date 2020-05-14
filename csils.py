@@ -14,6 +14,8 @@ count = 0
 # config vars
 lines = 13
 print("\n"*lines)
+display_rate = .2
+convo_rate = .01
 running = True
 
 #menu vars
@@ -23,22 +25,30 @@ info={
         }
 curr_info="help"
 
-def clear():
-    print("\033[F\033[K"*lines,end="")
 def updateDisplay():
     global curr_info
-    clear()
+    #clear
+    print("\033[F\033[K"*lines,end="")
     print(info[curr_info]())
     for ii in range(lines-1):
         print("%8d"%count,"foo")
+def displayLoop():
+    global running
+    while running:
+        updateDisplay()
+        sleep(display_rate)
+displayThread = threading.Thread(target=displayLoop)
+displayThread.start()
 
+###########
+## Convo ##
+###########
 def convoLoop():
     global running
     global count
     while(running):
         count+=1
-        updateDisplay()
-        sleep(.1)
+        sleep(convo_rate)
 convoThread = threading.Thread(target=convoLoop)
 convoThread.start()
 
