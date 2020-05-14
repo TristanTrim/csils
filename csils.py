@@ -15,6 +15,7 @@ _=subprocess.call("",shell=True)
 count = 0
 dev1=None
 dev2=None
+convo_log=[]
 
 # config vars
 lines = 13
@@ -38,12 +39,14 @@ curr_mode="main"
 conf=json.load(open("conf",'r'))
 
 def updateDisplay():
-    global curr_info, curr_mode
+    global curr_info, curr_mode, convo_log
     #clear
     print("\033[F\033[K"*lines,end="")
     print(info[curr_info]())
     if(curr_mode=="main"):
-        for ii in range(lines-1):
+        for line in convo_log:
+            print(line)
+        for ii in range(lines-1-len(convo_log)):
             print("%8d"%count,"foo")
     elif(curr_mode=="config"):
         print(" ",conf["dev1"])
@@ -68,10 +71,15 @@ displayThread.start()
 ## Convo ##
 ###########
 def convoLoop():
-    global running
-    global count
+    global running, count, convo_log
     try:
         while(running):
+            for dev in dev1,dev2:
+                if dev:
+                    msg=dev.readline()
+                    if len(msg)>0:
+                        convo_log+=[msg]
+                            # too nested
             count+=1
             sleep(convo_rate)
     except Exception:
@@ -96,12 +104,12 @@ try:
                 curr_info="connect"
                 inp=msvcrt.getch()
                 if(inp==b"1"):
-                    dev1=serial.Serial( *conf["dev1"][1] )
+                    dev1=serial.Serial( *conf["dev1"][1], timeout=0)
                 elif(inp==b"2"):
-                    dev1=serial.Serial( *conf["dev2"][1] )
+                    dev1=serial.Serial( *conf["dev2"][1], timeout=0)
                 elif(inp==b"a"):
-                    dev1=serial.Serial( *conf["dev1"][1] )
-                    dev1=serial.Serial( *conf["dev2"][1] )
+                    dev1=serial.Serial( *conf["dev1"][1], timeout=0)
+                    dev1=serial.Serial( *conf["dev2"][1], timeout=0)
                 curr_info=prev_info
             elif(inp==b"n"):
                 pass
