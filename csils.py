@@ -104,6 +104,7 @@ displayThread.start()
 ###########
 def convoLoop():
     global running, count, convo_log, tags
+    global log_offset,main_curr
     try:
         tags=['unknown']
         lastTime=time()
@@ -119,12 +120,16 @@ def convoLoop():
                                 deltaTime,
                                 dev.name,
                                 msg.hex(),
-                                tags]
+                                tags[:]]
                         logfile=open(conf["log"],'a+')
                         json.dump(new_msg,logfile)
                         logfile.write('\n')
                         logfile.close()
                         convo_log+=[new_msg]
+                        if(main_curr==len(convo_log)-2):
+                            main_curr+=1
+                            log_offset+=1
+
                             # too nested
             count+=1
             sleep(convo_rate)
@@ -136,6 +141,7 @@ convoThread.start()
 
 #UI loop
 try:
+    gg=False
     while(running):
         inp=msvcrt.getch()
         if(inp==b"q"):
@@ -144,10 +150,18 @@ try:
             curr_info="main"
             curr_mode="main"
         elif curr_mode=="main":
-            if(inp==b"c"):
-                curr_info="config"
-                curr_mode="config"
-            elif(inp==b"j"):
+            ### motion controls ###
+            ## gg latch ##
+            if(inp==b"g"):
+                if(gg):
+                    main_curr=0
+                    log_offset=0
+                else:
+                    gg=True
+            else:
+                gg=False
+            ## other stuff ##
+            if(inp==b"j"):
                 main_curr+=1
                 if(main_curr==len(convo_log)):
                     main_curr=len(convo_log)-1
@@ -159,6 +173,13 @@ try:
                     main_curr=0
                 elif(main_curr<log_offset):
                     log_offset-=1
+            elif(inp==b"G"):
+                main_curr=len(convo_log)-1
+                log_offset=len(convo_log)-lines+1
+            ### other main stuff ###
+            elif(inp==b"c"):
+                curr_info="config"
+                curr_mode="config"
             elif(inp==b"t"):
                 curr_mode="tags"
                 curr_info="tags"
