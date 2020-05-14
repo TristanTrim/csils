@@ -23,11 +23,12 @@ dev2=None
 # config vars
 lines = 13
 print("\n"*lines)
-display_rate = .2
+display_rate = .05
 convo_rate = .01
 running = True
 default_conf_file = "conf"
 main_curr=0
+log_offset=0
 entry_buf=""
 tags=[]
 
@@ -53,19 +54,24 @@ for line in logfile:
     convo_log+=[json.loads(line)]
 logfile.close()
 
+#############
+## Display ##
+#############
 def updateDisplay():
     global curr_info, curr_mode, convo_log, main_curr
     #clear
     print("\033[F\033[K"*lines,end="")
     print(info[curr_info]())
     if(curr_mode=="main" or curr_mode=="tags"):
-        for ii,line in enumerate(convo_log):
+        for ii in range(log_offset,log_offset+lines-1):
+            line = convo_log[ii]
             if ii == main_curr:
                 print("\033[1;37m",end="")#white
             else:
                 print("\033[0;37m",end="")#grey
             # time, source, msg, tags
-            outputLine="%6dms "%(line[0]*1000)\
+            outputLine="%4d"%ii\
+                    +" %6dms "%(line[0]*1000)\
                     +"%4s:"%line[1]\
                     +"%20s"%line[2]\
                     +"... "\
@@ -134,6 +140,9 @@ try:
         inp=msvcrt.getch()
         if(inp==b"q"):
             running=False
+        elif(inp==b"m"):
+            curr_info="main"
+            curr_mode="main"
         elif curr_mode=="main":
             if(inp==b"c"):
                 curr_info="config"
@@ -142,10 +151,14 @@ try:
                 main_curr+=1
                 if(main_curr==len(convo_log)):
                     main_curr=len(convo_log)-1
+                elif(main_curr>log_offset+lines-2):
+                    log_offset+=1
             elif(inp==b"k"):
                 main_curr-=1
                 if(main_curr==-1):
                     main_curr=0
+                elif(main_curr<log_offset):
+                    log_offset-=1
             elif(inp==b"t"):
                 curr_mode="tags"
                 curr_info="tags"
@@ -168,9 +181,6 @@ try:
                 pass
             elif(inp==b"b"):
                 pass
-            elif(inp==b"m"):
-                curr_info="main"
-                curr_mode="main"
         elif curr_mode=="tags":
             if(inp==b"n"):
                 curr_info="newtag"
