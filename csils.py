@@ -53,9 +53,14 @@ def updateDisplay():
 
 def displayLoop():
     global running
-    while running:
-        updateDisplay()
-        sleep(display_rate)
+    try:
+        while running:
+            updateDisplay()
+            sleep(display_rate)
+    except Exception:
+        print(traceback.format_exc())
+        running=False
+
 displayThread = threading.Thread(target=displayLoop)
 displayThread.start()
 
@@ -65,15 +70,19 @@ displayThread.start()
 def convoLoop():
     global running
     global count
-    while(running):
-        count+=1
-        sleep(convo_rate)
+    try:
+        while(running):
+            count+=1
+            sleep(convo_rate)
+    except Exception:
+        print(traceback.format_exc())
+        running=False
 convoThread = threading.Thread(target=convoLoop)
 convoThread.start()
 
 #UI loop
-while(running):
-    try:
+try:
+    while(running):
         inp=msvcrt.getch()
         if(inp==b"q"):
             running=False
@@ -103,9 +112,7 @@ while(running):
             elif(inp==b"m"):
                 curr_info="help"
                 curr_mode="main"
-
-    except Exception:
-        tb = traceback.format_exc()   
-        print(tb)
-        running=False
+except Exception:
+    print(traceback.format_exc())
+    running=False
 
