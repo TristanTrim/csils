@@ -60,7 +60,12 @@ def updateDisplay():
                 print("\033[1;37m",end="")#white
             else:
                 print("\033[0;37m",end="")#grey
-            outputLine=str(line)
+            # time, source, msg, tags
+            outputLine="%6dms "%(line[0]*1000)\
+                    +"%4s:"%line[1]\
+                    +"%20s"%line[2]\
+                    +"... "\
+                    +"%8s"%line[3]
             print(outputLine[:columns])
         print("\033[0;37m",end="")#grey
         for ii in range(lines-1-len(convo_log)):
