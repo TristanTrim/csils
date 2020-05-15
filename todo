@@ -1,0 +1,3 @@
+
+-create 'default'/'demo' config
+-"r+" doesn't read or create? I guess I could just try to read and if the files not there read nothing...
