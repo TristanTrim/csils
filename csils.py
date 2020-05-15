@@ -88,13 +88,19 @@ def updateDisplay():
                 print("\033[1;37m",end="")#white
             else:
                 print("\033[0;37m",end="")#grey
-            # time, source, msg, tags
-            outputLine="%4d"%ii\
+            #[ time, source, msg, tags ]
+                    # line number
+                    # msg time\
+                    # device name\
+                    # hex msg\
+                    # tags\
+            outputLine="%4d"%ii \
                     +" %6dms "%(line[0]*1000)\
-                    +"%4s:"%line[1]\
-                    +"%20s"%line[2]\
+                    +"%4s:"%line[1] \
+                    +"%-20s"%line[2] \
                     +"... "\
-                    +"%8s"%line[3]
+                    +"%8s"%line[3] \
+                    +"\r"
             print(outputLine[:columns])
         print("\033[0;37m\r",end="")#grey
         for ii in range(lines-1-len(convo_log)):
