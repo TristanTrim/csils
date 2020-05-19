@@ -84,8 +84,9 @@ class StaticBytes():
             longest_child=None
             for child in self._children:
                 ii=0
-                while ii<len(child._match) and ii<len(msg):
-                    if(msg[ii]==child._match[ii+1]):
+                child_pattern = child._match.pattern[1:]
+                while ii<len(child_pattern) and ii<len(msg):
+                    if(msg[ii]==child_pattern[ii]):
                         ii+=1
                         if(ii>longest_match):
                             longest_match=ii
@@ -93,7 +94,7 @@ class StaticBytes():
                     else:
                         break
             if(longest_child):
-                if(len(longest_child._match)-1>longest_match):
+                if(len(longest_child._match.pattern)-1>longest_match):
                     new_matching_child = longest_child.split(longest_match)
                     # longest_child no longer exists!
                     # ok, it does, but it's now the child of
@@ -123,11 +124,10 @@ class StaticBytes():
         #the only time _parent should be None is in root
         return(self._parent.create(
             msg=self._match.pattern[1:]+msg,static=static))
-    def send(self,msg=""):
+    def send(self,msg=b""):
         if not msg:
             msg = self.create()
-        bmsg = h2b(msg)
-        self._root.send(bmsg)
+        self._root.send(msg)
     def recieve(self):
         return(self._root.recieve())
 

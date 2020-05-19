@@ -117,15 +117,15 @@ def updateDisplay():
             print("...\r")
     # print config screen
     elif(curr_mode=="config"):
-        print("\033[K",end="")
-        print(str(dev1)[:columns],"\r")
-        print("\033[K",end="")
-        print(" ",conf["dev1"],"\r")
-        print("\033[K",end="")
-        print(str(dev2)[:columns],"\r")
-        print("\033[K",end="")
-        print(" ",conf["dev2"],"\r")
-        for ii in range(lines-1-4):
+        for dev,devstr in (dev1,"dev1"),(dev2,"dev2"):
+            print("\033[K",end="")
+            print(str(dev)[:columns],"\r")
+            print("\033[K",end="")
+            print("getsFrom:",dev.getsFrom,"sendsTo",dev.sendsTo,"\r")
+            print("\033[K",end="")
+            print(" ",conf[devstr],"\r")
+        #TODO: this might break if < 6 lines??? not that anyone should try to use the program like that.
+        for ii in range(lines-1-6):
             print("\033[K",end="")
             print("%8d"%count,"foo","\r")
 
@@ -177,6 +177,7 @@ def convoLoop():
                         fl=open("debug","a+")
                         fl.write(str(parsed))
                         fl.write("\n")
+                        fl.flush()
                         fl.close()
                         # scroll if cursor at bottom
                         if(main_curr==len(convo_log)-2):
@@ -265,7 +266,7 @@ try:
                 inp=getch()
                 if(inp=="1" or inp=="a"):
                     com1=serial.Serial( *conf["dev1"][1], timeout=0)
-                elif(inp=="2" or inp=="a"):
+                if(inp=="2" or inp=="a"):
                     com2=serial.Serial( *conf["dev2"][1], timeout=0)
                 dev1.getsFrom,dev1.sendsTo = com1, com2
                 dev2.getsFrom,dev2.sendsTo = com2, com1
@@ -282,7 +283,7 @@ try:
                 inp=getch()
                 if(inp=="1" or inp=="a"):
                     dev1=None
-                elif(inp=="2" or inp=="a"):
+                if(inp=="2" or inp=="a"):
                     dev2=None
                 dev1.getsFrom,dev1.sendsTo = com1, com2
                 dev2.getsFrom,dev2.sendsTo = com2, com1
