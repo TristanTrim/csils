@@ -15,7 +15,10 @@ class StaticBytes():
     """
     will accept any regex for match. Make sure you know what you're doing.
     """
+    last_id=1
     def __init__(self,name,parent,mtch):
+        StaticBytes.last_id+=1
+        self.id=StaticBytes.last_id
         self.name=name
         self._parent=parent
         self._children=[]
@@ -42,9 +45,20 @@ class StaticBytes():
     def _decrement(self):
         if(self._parent):
             self._parent._decrement()
-
     def match(self, msg, static=False):
         return(self._match.search(msg))
+    def split(self,index):
+        """splits this at index,
+        returning the newly created begining part"""
+        mtch = self._match.pattern[1:]
+        new,old = mtch[:index], mtch[index:]
+        newBytes = StaticBytes(
+                self.name+"x",
+                self._parent,
+                new)
+        self._parent = newBytes
+        self._match = re.compile(b"^"+old)
+        return(newBytes)
     def parse(self, msg, static=False, mapping=True):
         """ returns:
                 (node that message matched,
@@ -79,10 +93,10 @@ class StaticBytes():
                         break
             if(longest_child):
                 if(len(longest_child._match)-1>longest_match):
-                    # TODO: split method on StaticBytes that returns
-                    # the new child
                     new_matching_child = longest_child.split(longest_match)
                     # longest_child no longer exists!
+                    # ok, it does, but it's now the child of
+                    # new_matching_child
                 # longest match cannot be longer than msg
                 msg_left = msg[longest_match:]
                 if(msg_left):
@@ -93,7 +107,10 @@ class StaticBytes():
                     return(new_matching_child,msg_left,False)
             # if no partial match with any existing child
             else:
-                #TODO: new Staticbytes with leftover msg
+                StaticBytes(
+                        "sv"+self.id,
+                        self
+                        msg)
         return(self,msg,False)
     def create(self, msg="", static=False):
         """returns:
