@@ -57,6 +57,7 @@ log_offset=0
 entry_buf=""
 tags=[]
 tree_curr=0
+tree_curr_h=0
 tree_offset=0
 
 #menu vars
@@ -95,6 +96,7 @@ logfile.close()
 #############
 def updateDisplay():
     global curr_info, curr_mode, convo_log, main_curr
+    global tree_curr,tree_offset,tree_curr_h
     #go to top
     print("\033[F"*lines,end="")
     print("\033[K",end="")
@@ -148,16 +150,17 @@ def updateDisplay():
             for ii in range(tree_offset,min(tree_offset+lines-1,len(parseTree))):
                 debug("index: "+str(ii))
                 line = parseTree[ii]
-                if ii == tree_curr:
-                    print("\033[1;37m",end="")#white
-                else:
-                    print("\033[0;37m",end="")#grey
                 outputLine="%4d"%ii \
-                        +" "\
-                        +"|".join(line)\
-                        +"\r"
-                print("\033[K",end="")
-                print(outputLine[:columns-3])
+                        +" "
+                for jj,node in enumerate(line):
+                    if ii == tree_curr and jj == tree_curr_h:
+                        outputLine+="\033[1;37m"#white
+                    else:
+                        outputLine+="\033[0;37m"#grey
+                    outputLine+="|"+node
+                outputLine=outputLine[:columns-3]\
+                        +"\033[K\r"
+                print(outputLine)
             print("\033[0;37m\r",end="")#grey
             for ii in range(lines-1-len(parseTree)):
                 print("\033[K",end="")
@@ -187,7 +190,7 @@ def convoLoop():
     try:# everything is in try loop so thread can be stopped
         global running, count, convo_log, tags
         global log_offset,main_curr
-        global tree_offset,tree_curr,parseTree
+        global tree_offset,tree_curr,tree_curr_h,parseTree
         tags=['unknown']
         lastTime=time()
         while(running):
@@ -292,6 +295,12 @@ try:
                     tree_curr=0
                 elif(tree_curr<tree_offset):
                     tree_offset-=1
+            elif(inp=="h"):
+                tree_curr_h-=1
+                if(tree_curr_h<0):
+                    tree_curr_h=0
+            elif(inp=="l"):
+                tree_curr_h+=1
             elif(inp=="G"):
                 tree_curr=len(parseTree)-1
                 tree_offset=max(len(parseTree)-lines+2,0)
