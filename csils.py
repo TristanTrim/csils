@@ -71,6 +71,7 @@ info={
         "confirm":lambda:"Are you sure? (y/n)",
         "tags":lambda:"n-new d-delete",
         "newtag":lambda:entry_buf,
+        #TODO: this can easily go out of bounds, but needs to check for that
         "parseTree":lambda:"name: {}  type: {}".format(
                             parseTree[tree_curr][tree_curr_h][1].name,
                             type(parseTree[tree_curr][tree_curr_h][1]))

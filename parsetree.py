@@ -17,7 +17,7 @@ class StaticBytes():
     will accept any regex for match. Make sure you know what you're doing.
     """
     last_id=1
-    def _recompile(regex):
+    def _recompile(self,regex):
         self._pattern = regex
         self._match=re.compile(b"^"+re.escape(regex))
     def __init__(self,name,parent,mtch):
