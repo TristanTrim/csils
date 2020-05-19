@@ -29,6 +29,12 @@ except ModuleNotFoundError:
 
 import json
 
+def debug(msg):
+    fl=open("debug","a+")
+    fl.write(str(msg))
+    fl.write("\n")
+    fl.flush()
+    fl.close()
 # get the size of the terminal
 import os
 rows, columns = (int(x) for x in os.popen('stty size', 'r').read().split())
@@ -50,6 +56,8 @@ main_curr=0
 log_offset=0
 entry_buf=""
 tags=[]
+tree_curr=0
+tree_offset=0
 
 #menu vars
 info={
@@ -71,6 +79,9 @@ com1=None
 com2=None
 dev1=parsetree.Root(conf["dev1"][0],None,None)
 dev2=parsetree.Root(conf["dev2"][0],None,None)
+
+parseTree = None
+parseTreeLock = True
 
 #load log
 convo_log=[]
@@ -129,6 +140,31 @@ def updateDisplay():
         for ii in range(lines-1-8):
             print("\033[K",end="")
             print("%8d"%count,"foo","\r")
+    # print parse tree screen
+    elif(curr_mode=="parseTree"):
+        if not parseTreeLock:
+            debug("tree_offset"+str(tree_offset))
+            debug("len(parseTree):"+str(len(parseTree)))
+            for ii in range(tree_offset,min(tree_offset+lines-1,len(parseTree))):
+                debug("index: "+str(ii))
+                line = parseTree[ii]
+                if ii == tree_curr:
+                    print("\033[1;37m",end="")#white
+                else:
+                    print("\033[0;37m",end="")#grey
+                outputLine="%4d"%ii \
+                        +" "\
+                        +"|".join(line)\
+                        +"\r"
+                print("\033[K",end="")
+                print(outputLine[:columns-3])
+            print("\033[0;37m\r",end="")#grey
+            for ii in range(lines-1-len(parseTree)):
+                print("\033[K",end="")
+                print("...\r")
+        else:
+            for ii in range(lines-1):
+                print("\033[B\r",end="")
 
 def displayLoop():
     try:# everything is in try loop so thread can be stopped
@@ -151,6 +187,7 @@ def convoLoop():
     try:# everything is in try loop so thread can be stopped
         global running, count, convo_log, tags
         global log_offset,main_curr
+        global tree_offset,tree_curr,parseTree
         tags=['unknown']
         lastTime=time()
         while(running):
@@ -175,17 +212,22 @@ def convoLoop():
                         convo_log+=[new_msg]
                         #parse
                         parsed = dev.parse(msg)
-                        fl=open("debug","a+")
-                        fl.write(str(parsed))
-                        fl.write("\n")
-                        fl.flush()
-                        fl.close()
+                        debug(parsed)
                         # scroll if cursor at bottom
                         if(main_curr==len(convo_log)-2):
                             main_curr+=1
                             log_offset+=1
                         # pass to other device
                         dev.send(msg)
+                        if(curr_mode=="parseTree"):
+                            move_tree_curr = (tree_curr == len(parseTree)-1)
+                            old_len = len(parseTree)
+                            freshenParseTree()
+                            new_len = len(parseTree)
+                            if move_tree_curr:
+                                tree_curr += new_len - old_len
+                                if(tree_curr > lines-3):
+                                    tree_offset += new_len - old_len
             count+=1
             sleep(convo_rate)
     except Exception:
@@ -193,6 +235,19 @@ def convoLoop():
         running=False
 convoThread = threading.Thread(target=convoLoop)
 convoThread.start()
+
+def freshenParseTree():
+    global dev1,dev2,parseTree,parseTreeLock
+    parseTreeLock=True
+    d1tree=dev1.getTable()
+    d2tree=dev2.getTable()
+    newParseTree = []
+    for row in d1tree:
+        newParseTree+=[[dev1.name]+row]
+    for row in d2tree:
+        newParseTree+=[[dev2.name]+row]
+    parseTree=newParseTree
+    parseTreeLock=False
 
 ######################
 ## Human Input loop ##
@@ -203,14 +258,58 @@ try:
     print("\033[?25l",end="")
     while(running):
         inp=getch()
-        fl=open("debug","a+")
-        fl.write(inp+"\n")
-        fl.close()
+        debug(inp)
         if(inp=="q"):
             running=False
         elif(inp=="m"):
             curr_info="main"
             curr_mode="main"
+        elif(inp=="p"):
+            curr_mode="parseTree"
+            freshenParseTree()
+        ### Parse Tree Control ###
+        elif curr_mode=="parseTree":
+            ### motion controls ###
+            ## gg latch ##
+            if(inp=="g"):
+                if(gg):
+                    tree_curr=0
+                    tree_offset=0
+                else:
+                    gg=True
+            else:
+                gg=False
+            ## other motion ##
+            if(inp=="j"):
+                tree_curr+=1
+                if(tree_curr==len(parseTree)):
+                    tree_curr=len(parseTree)-1
+                elif(tree_curr>tree_offset+lines-2):
+                    tree_offset+=1
+            elif(inp=="k"):
+                tree_curr-=1
+                if(tree_curr==-1):
+                    tree_curr=0
+                elif(tree_curr<tree_offset):
+                    tree_offset-=1
+            elif(inp=="G"):
+                tree_curr=len(parseTree)-1
+                tree_offset=max(len(parseTree)-lines+2,0)
+            elif(inp==""):
+                tree_curr+=int(lines/2)
+                tree_offset+=int(lines/2)
+                if(tree_curr>=len(parseTree)):
+                    tree_curr=len(parseTree)-1
+                if(tree_offset>=len(parseTree)-lines+1):
+                    tree_offset=len(parseTree)-lines+1
+            elif(inp==""):
+                tree_curr-=int(lines/2)
+                tree_offset-=int(lines/2)
+                if(tree_curr<0):
+                    tree_curr=0
+                if(tree_offset<0):
+                    tree_offset=0
+        ### Main Control ###
         elif curr_mode=="main":
             ### motion controls ###
             ## gg latch ##

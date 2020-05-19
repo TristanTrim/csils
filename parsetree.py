@@ -23,6 +23,7 @@ class StaticBytes():
         self.name=name
         self._parent=parent
         self._children=[]
+        self.terminations=0
         if(parent):
             self._root=parent._root
             parent._children+=[self]
@@ -60,6 +61,19 @@ class StaticBytes():
         self._parent = newBytes
         self._match = re.compile(b"^"+old)
         return(newBytes)
+    def getTable(self):
+        #selfword = "".join(str(x)[-2:] for x in self._match.pattern[1:])
+        selfword = b2h(self._match.pattern[1:])
+        if(self._children):
+            selfspace = " "*len(selfword)
+            sub_table=[]
+            for child in self._children:
+                for row in child.getTable():
+                    sub_table+=[[selfspace]+row]
+            sub_table[0][0]=selfword
+            return(sub_table)
+        else:
+            return([[selfword]])
     def parse(self, msg, static=False, mapping=True):
         """ returns:
                 (node that message matched,
@@ -76,6 +90,7 @@ class StaticBytes():
                                        static=static,
                                        mapping=mapping))
                 else:
+                    child.terminations+=1
                     return(child,msg_left,True)
         #no match
         if(mapping):
