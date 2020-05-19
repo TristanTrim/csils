@@ -154,6 +154,9 @@ def updateDisplay():
             debug("tree_offset"+str(tree_offset))
             debug("len(parseTree):"+str(len(parseTree)))
             for ii in range(tree_offset,min(tree_offset+lines-1,len(parseTree))):
+                debug(ii)
+                debug(tree_offset)
+                debug(len(parseTree))
                 line = parseTree[ii]
                 outputLine="%4d"%ii \
                         +" "
@@ -252,6 +255,7 @@ convoThread.start()
 
 def freshenParseTree():
     global dev1,dev2,parseTree,parseTreeLock
+    global tree_curr,tree_curr_h,tree_offset
     parseTreeLock=True
     d1tree=dev1.getTable()
     d2tree=dev2.getTable()
@@ -261,6 +265,12 @@ def freshenParseTree():
     for row in d2tree:
         newParseTree+=[[[dev2.name,dev2]]+row]
     parseTree=newParseTree
+    if(tree_offset>=(len(parseTree)-lines)):
+        tree_offset=max(len(parseTree)-lines,0)
+    if(tree_curr>=len(parseTree)):
+        tree_curr=len(parseTree)-1
+    if(tree_curr_h>=len(parseTree[tree_curr])):
+        tree_curr_h=len(parseTree[tree_curr])-1
     parseTreeLock=False
 
 ######################
@@ -286,6 +296,8 @@ try:
                 if(gg):
                     tree_curr=0
                     tree_offset=0
+                    if(tree_curr_h>=len(parseTree[tree_curr])):
+                        tree_curr_h=len(parseTree[tree_curr])-1
                 else:
                     gg=True
             else:
@@ -303,15 +315,23 @@ try:
                     tree_curr=0
                 elif(tree_curr<tree_offset):
                     tree_offset-=1
+                if(tree_curr_h>=len(parseTree[tree_curr])):
+                    tree_curr_h=len(parseTree[tree_curr])-1
             elif(inp=="h"):
                 tree_curr_h-=1
                 if(tree_curr_h<0):
                     tree_curr_h=0
+                if(tree_curr_h>=len(parseTree[tree_curr])):
+                    tree_curr_h=len(parseTree[tree_curr])-1
             elif(inp=="l"):
                 tree_curr_h+=1
+                if(tree_curr_h>=len(parseTree[tree_curr])):
+                    tree_curr_h=len(parseTree[tree_curr])-1
             elif(inp=="G"):
                 tree_curr=len(parseTree)-1
                 tree_offset=max(len(parseTree)-lines+2,0)
+                if(tree_curr_h>=len(parseTree[tree_curr])):
+                    tree_curr_h=len(parseTree[tree_curr])-1
             elif(inp==""):
                 tree_curr+=int(lines/2)
                 tree_offset+=int(lines/2)
@@ -319,6 +339,8 @@ try:
                     tree_curr=len(parseTree)-1
                 if(tree_offset>=len(parseTree)-lines+1):
                     tree_offset=len(parseTree)-lines+1
+                if(tree_curr_h>=len(parseTree[tree_curr])):
+                    tree_curr_h=len(parseTree[tree_curr])-1
             elif(inp==""):
                 tree_curr-=int(lines/2)
                 tree_offset-=int(lines/2)
@@ -326,6 +348,8 @@ try:
                     tree_curr=0
                 if(tree_offset<0):
                     tree_offset=0
+                if(tree_curr_h>=len(parseTree[tree_curr])):
+                    tree_curr_h=len(parseTree[tree_curr])-1
             ### other tree commands ###
             elif(inp=="s"):
                 split_at = 1
