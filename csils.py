@@ -39,7 +39,7 @@ dev1=None
 dev2=None
 
 # config vars
-lines = 13
+lines = rows-3#13
 print("\n"*lines)
 display_rate = .05
 convo_rate = .01
@@ -177,6 +177,9 @@ try:
     gg=False
     while(running):
         inp=getch()
+        fl=open("debug","a+")
+        fl.write(inp+"\n")
+        fl.close()
         if(inp=="q"):
             running=False
         elif(inp=="m"):
@@ -193,7 +196,7 @@ try:
                     gg=True
             else:
                 gg=False
-            ## other stuff ##
+            ## other motion ##
             if(inp=="j"):
                 main_curr+=1
                 if(main_curr==len(convo_log)):
@@ -209,6 +212,20 @@ try:
             elif(inp=="G"):
                 main_curr=len(convo_log)-1
                 log_offset=len(convo_log)-lines+1
+            elif(inp==""):
+                main_curr+=int(lines/2)
+                log_offset+=int(lines/2)
+                if(main_curr>=len(convo_log)):
+                    main_curr=len(convo_log)-1
+                if(log_offset>=len(convo_log)-lines+1):
+                    log_offset=len(convo_log)-lines+1
+            elif(inp==""):
+                main_curr-=int(lines/2)
+                log_offset-=int(lines/2)
+                if(main_curr<0):
+                    main_curr=0
+                if(log_offset<0):
+                    log_offset=0
             ### other main stuff ###
             elif(inp=="c"):
                 curr_info="config"
