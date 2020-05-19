@@ -5,6 +5,9 @@ import traceback
 import threading
 from time import sleep, time
 import subprocess
+
+import parsetree
+
 try:
     import msvcrt # windows
     OS = "windows"
@@ -35,8 +38,6 @@ _=subprocess.call("",shell=True)
 
 # data vars
 count = 0
-dev1=None
-dev2=None
 
 # config vars
 lines = rows-3#13
@@ -65,6 +66,12 @@ curr_mode="main"
 
 #load default conf
 conf=json.load(open("conf",'r'))
+
+com1=None
+com2=None
+dev1=parsetree.Root(conf["dev1"][0],None,None)
+dev2=parsetree.Root(conf["dev2"][0],None,None)
+
 #load log
 convo_log=[]
 logfile=open(conf["log"],'r+')
@@ -130,7 +137,7 @@ def displayLoop():
             sleep(display_rate)
     except Exception:
         # traceback
-        print(traceback.format_exc())
+        print(traceback.format_exc(),end="\n\r")
         running=False
 
 displayThread = threading.Thread(target=displayLoop)
@@ -146,9 +153,9 @@ def convoLoop():
         tags=['unknown']
         lastTime=time()
         while(running):
-            for dev,otherDev in [dev1,dev2],[dev2,dev1]:
-                if dev:
-                    msg=dev.readline()
+            for dev in dev1,dev2:
+                if dev.getsFrom:
+                    msg=dev.recieve()
                     if len(msg)>0:
                         #time
                         thisTime=time()
@@ -165,16 +172,22 @@ def convoLoop():
                         logfile.write('\n')
                         logfile.close()
                         convo_log+=[new_msg]
+                        #parse
+                        parsed = dev.parse(msg)
+                        fl=open("debug","a+")
+                        fl.write(str(parsed))
+                        fl.write("\n")
+                        fl.close()
                         # scroll if cursor at bottom
                         if(main_curr==len(convo_log)-2):
                             main_curr+=1
                             log_offset+=1
-                        if(otherDev):
-                            otherDev.write(msg)
+                        # pass to other device
+                        dev.send(msg)
             count+=1
             sleep(convo_rate)
     except Exception:
-        print(traceback.format_exc())
+        print(traceback.format_exc(),end="\n\r")
         running=False
 convoThread = threading.Thread(target=convoLoop)
 convoThread.start()
@@ -250,13 +263,12 @@ try:
                 prev_info=curr_info
                 curr_info="connect"
                 inp=getch()
-                if(inp=="1"):
-                    dev1=serial.Serial( *conf["dev1"][1], timeout=0)
-                elif(inp=="2"):
-                    dev2=serial.Serial( *conf["dev2"][1], timeout=0)
-                elif(inp=="a"):
-                    dev1=serial.Serial( *conf["dev1"][1], timeout=0)
-                    dev2=serial.Serial( *conf["dev2"][1], timeout=0)
+                if(inp=="1" or inp=="a"):
+                    com1=serial.Serial( *conf["dev1"][1], timeout=0)
+                elif(inp=="2" or inp=="a"):
+                    com2=serial.Serial( *conf["dev2"][1], timeout=0)
+                dev1.getsFrom,dev1.sendsTo = com1, com2
+                dev2.getsFrom,dev2.sendsTo = com2, com1
                 curr_info=prev_info
             elif(inp=="n"):
                 pass
@@ -268,13 +280,12 @@ try:
                 prev_info=curr_info
                 curr_info="connect"
                 inp=getch()
-                if(inp=="1"):
+                if(inp=="1" or inp=="a"):
                     dev1=None
-                elif(inp=="2"):
+                elif(inp=="2" or inp=="a"):
                     dev2=None
-                elif(inp=="a"):
-                    dev1=None
-                    dev2=None
+                dev1.getsFrom,dev1.sendsTo = com1, com2
+                dev2.getsFrom,dev2.sendsTo = com2, com1
                 curr_info=prev_info
 
         ## Tags input ##
@@ -296,7 +307,7 @@ try:
                     else:
                         entry_buf+=inp
 except Exception:
-    print(traceback.format_exc())
+    print(traceback.format_exc(),end="\n\r")
     running=False
 
 #default white text...

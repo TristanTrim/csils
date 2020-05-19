@@ -1,3 +1,4 @@
+import re
 
 def b2h(bytmsg):
     """takes bytearray returns hex"""
@@ -108,8 +109,8 @@ class StaticBytes():
             # if no partial match with any existing child
             else:
                 StaticBytes(
-                        "sv"+self.id,
-                        self
+                        "sv%d"%self.id,
+                        self,
                         msg)
         return(self,msg,False)
     def create(self, msg="", static=False):
@@ -133,9 +134,9 @@ class StaticBytes():
 #####################
 ##    subclasses   ##
 #####################
-class Root(Staticbytes):
+class Root(StaticBytes):
     def __init__(self,name,getsFrom,sendsTo):
-        super(root,self).__init__(name,None,"")
+        super(Root,self).__init__(name,None,b"")
         self.getsFrom=getsFrom
         self.sendsTo=sendsTo
     def create(self,msg="",static=False):
@@ -156,7 +157,7 @@ class Root(Staticbytes):
             return(self.getsFrom.readline())
         else:
             return(b"")
-class CountBytes(Staticbytes):
+class CountBytes(StaticBytes):
     """one byte of counting!"""
     #TODO: multiple bytes. And specific case of transition function bytes?
     def __init__(self,name,parent,init=None,friendly=True):
@@ -203,7 +204,7 @@ class CountBytes(Staticbytes):
             self._increment()
         return(self._parent.create(msg=msg,static=static))
 
-class VariableBytes(node):
+class VariableBytes(StaticBytes):
     # matches any values??
     #TODO: add variable number of bytes to eat
     def __init__(self,name,parent,default="00"):
