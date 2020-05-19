@@ -79,6 +79,7 @@ def updateDisplay():
     global curr_info, curr_mode, convo_log, main_curr
     #go to top
     print("\033[F"*lines,end="")
+    print("\033[K",end="")
     print(info[curr_info]())
     print("\r",end="")
     if(curr_mode=="main" or curr_mode=="tags"):
