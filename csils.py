@@ -105,15 +105,18 @@ def updateDisplay():
         print("\033[0;37m\r",end="")#grey
         for ii in range(lines-1-len(convo_log)):
             print("...\r")
+    # print config screen
     elif(curr_mode=="config"):
+        print(str(dev1)[:columns],"\r")
         print(" ",conf["dev1"],"\r")
+        print(str(dev2)[:columns],"\r")
         print(" ",conf["dev2"],"\r")
-        for ii in range(lines-1-2):
+        for ii in range(lines-1-4):
             print("%8d"%count,"foo","\r")
 
 def displayLoop():
-    global running
-    try:
+    try:# everything is in try loop so thread can be stopped
+        global running
         while running:
             updateDisplay()
             sleep(display_rate)
@@ -128,19 +131,21 @@ displayThread.start()
 ## Convo ##
 ###########
 def convoLoop():
-    global running, count, convo_log, tags
-    global log_offset,main_curr
-    try:
+    try:# everything is in try loop so thread can be stopped
+        global running, count, convo_log, tags
+        global log_offset,main_curr
         tags=['unknown']
         lastTime=time()
         while(running):
-            for dev in dev1,dev2:
+            for dev,otherDev in [dev1,dev2],[dev2,dev1]:
                 if dev:
                     msg=dev.readline()
                     if len(msg)>0:
+                        #time
                         thisTime=time()
                         deltaTime=thisTime-lastTime
                         lastTime=thisTime
+                        #log
                         new_msg=[
                                 deltaTime,
                                 dev.name,
@@ -151,11 +156,12 @@ def convoLoop():
                         logfile.write('\n')
                         logfile.close()
                         convo_log+=[new_msg]
+                        # scroll if cursor at bottom
                         if(main_curr==len(convo_log)-2):
                             main_curr+=1
                             log_offset+=1
-
-                            # too nested
+                        if(otherDev):
+                            otherDev.write(msg)
             count+=1
             sleep(convo_rate)
     except Exception:
@@ -164,7 +170,9 @@ def convoLoop():
 convoThread = threading.Thread(target=convoLoop)
 convoThread.start()
 
-#UI loop
+######################
+## Human Input loop ##
+######################
 try:
     gg=False
     while(running):
@@ -216,10 +224,10 @@ try:
                 if(inp=="1"):
                     dev1=serial.Serial( *conf["dev1"][1], timeout=0)
                 elif(inp=="2"):
-                    dev1=serial.Serial( *conf["dev2"][1], timeout=0)
+                    dev2=serial.Serial( *conf["dev2"][1], timeout=0)
                 elif(inp=="a"):
                     dev1=serial.Serial( *conf["dev1"][1], timeout=0)
-                    dev1=serial.Serial( *conf["dev2"][1], timeout=0)
+                    dev2=serial.Serial( *conf["dev2"][1], timeout=0)
                 curr_info=prev_info
             elif(inp=="n"):
                 pass
