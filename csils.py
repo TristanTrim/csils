@@ -53,7 +53,7 @@ tags=[]
 #menu vars
 info={
         "main":lambda:"q-quit(global) c-config t-tags  %8d"%count,
-        "config":lambda:"c-connect n-name p-port b-baud m-main",
+        "config":lambda:"c-connect d-disconnect n-name p-port b-baud m-main",
         "conf":lambda:str(conf),
         "connect":lambda:"1-{} 2-{} a-all c-cancel".format(
                         conf["dev1"][0], conf["dev2"][0]),
@@ -77,8 +77,8 @@ logfile.close()
 #############
 def updateDisplay():
     global curr_info, curr_mode, convo_log, main_curr
-    #clear
-    print("\033[F\033[K"*lines,end="")
+    #go to top
+    print("\033[F"*lines,end="")
     print(info[curr_info]())
     print("\r",end="")
     if(curr_mode=="main" or curr_mode=="tags"):
@@ -101,17 +101,24 @@ def updateDisplay():
                     +"... "\
                     +"%8s"%line[3] \
                     +"\r"
+            print("\033[K",end="")
             print(outputLine[:columns])
         print("\033[0;37m\r",end="")#grey
         for ii in range(lines-1-len(convo_log)):
+            print("\033[K",end="")
             print("...\r")
     # print config screen
     elif(curr_mode=="config"):
+        print("\033[K",end="")
         print(str(dev1)[:columns],"\r")
+        print("\033[K",end="")
         print(" ",conf["dev1"],"\r")
+        print("\033[K",end="")
         print(str(dev2)[:columns],"\r")
+        print("\033[K",end="")
         print(" ",conf["dev2"],"\r")
         for ii in range(lines-1-4):
+            print("\033[K",end="")
             print("%8d"%count,"foo","\r")
 
 def displayLoop():
@@ -121,6 +128,7 @@ def displayLoop():
             updateDisplay()
             sleep(display_rate)
     except Exception:
+        # traceback
         print(traceback.format_exc())
         running=False
 
@@ -175,6 +183,8 @@ convoThread.start()
 ######################
 try:
     gg=False
+    # hide cursor
+    print("\033[?25l",end="")
     while(running):
         inp=getch()
         fl=open("debug","a+")
@@ -233,6 +243,7 @@ try:
             elif(inp=="t"):
                 curr_mode="tags"
                 curr_info="tags"
+        ## Config input ##
         elif curr_mode=="config":
             if(inp=="c"):
                 prev_info=curr_info
@@ -252,6 +263,20 @@ try:
                 pass
             elif(inp=="b"):
                 pass
+            elif(inp=="d"):
+                prev_info=curr_info
+                curr_info="connect"
+                inp=getch()
+                if(inp=="1"):
+                    dev1=None
+                elif(inp=="2"):
+                    dev2=None
+                elif(inp=="a"):
+                    dev1=None
+                    dev2=None
+                curr_info=prev_info
+
+        ## Tags input ##
         elif curr_mode=="tags":
             if(inp=="n"):
                 curr_info="newtag"
@@ -275,3 +300,5 @@ except Exception:
 
 #default white text...
 print("\033[1;37m",end="")
+# show cursor
+print("\033[?25h",end="")
