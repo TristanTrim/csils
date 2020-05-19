@@ -110,7 +110,7 @@ class StaticBytes():
             # if no partial match with any existing child
             else:
                 StaticBytes(
-                        "sv%d"%self.id,
+                        "s%d"%self.id,
                         self,
                         msg)
         return(self,msg,False)

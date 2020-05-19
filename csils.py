@@ -121,11 +121,12 @@ def updateDisplay():
             print("\033[K",end="")
             print(str(dev)[:columns],"\r")
             print("\033[K",end="")
-            print("getsFrom:",dev.getsFrom,"sendsTo",dev.sendsTo,"\r")
+            print(("getsFrom: "+str(dev.getsFrom))[:columns-1],"\r")
+            print(("sendsTo: "+str(dev.sendsTo))[:columns-1],"\r")
             print("\033[K",end="")
             print(" ",conf[devstr],"\r")
         #TODO: this might break if < 6 lines??? not that anyone should try to use the program like that.
-        for ii in range(lines-1-6):
+        for ii in range(lines-1-8):
             print("\033[K",end="")
             print("%8d"%count,"foo","\r")
 
