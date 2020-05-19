@@ -17,6 +17,9 @@ class StaticBytes():
     will accept any regex for match. Make sure you know what you're doing.
     """
     last_id=1
+    def _recompile(regex):
+        self._pattern = regex
+        self._match=re.compile(b"^"+re.escape(regex))
     def __init__(self,name,parent,mtch):
         StaticBytes.last_id+=1
         self.id=StaticBytes.last_id
@@ -30,7 +33,7 @@ class StaticBytes():
         else:
             self._root=self
         #mtch = cleanMsg(mtch)
-        self._match=re.compile(b"^"+mtch)
+        self._recompile(mtch)
     def __str__(self):
         return("<{}:{}:{}>".format(
             self._root.name,
@@ -52,7 +55,7 @@ class StaticBytes():
     def split(self,index):
         """splits this at index,
         returning the newly created begining part"""
-        mtch = self._match.pattern[1:]
+        mtch = self._pattern
         new,old = mtch[:index], mtch[index:]
         self._parent._children.remove(self)
         newBytes = StaticBytes(
@@ -61,11 +64,31 @@ class StaticBytes():
                 new)
         self._parent = newBytes
         newBytes._children+=[self]
-        self._match = re.compile(b"^"+old)
+        self._recompile(old)
         return(newBytes)
+    def removeNBytes(self,n):
+        pattern = self._pattern
+        if(n>=len(pattern)):
+            remainToRemove=n-len(pattern)
+            children = []
+            for child in self._children:
+                children+=child.removeNBytes(remainToRemove)
+            return(children)
+            # does not remove self from parent because calling function will take care of that
+        else:
+            newPattern = pattern[n:]
+            self._recompile(newPattern)
+            return([self])
+    def convertToVar(self):
+        leng = len(self._pattern)
+        self._recompile(b"."*leng)
+        self._parent._children.remove(self)
+        for child in self._parent._children:
+            self._children+=child.removeNBytes(leng)
+        self._parent._children = [self]
     def getTable(self):
         #selfword = "".join(str(x)[-2:] for x in self._match.pattern[1:])
-        selfword = b2h(self._match.pattern[1:])
+        selfword = b2h(self._pattern)
         if(self._children):
             selfspace = " "*len(selfword)
             sub_table=[]
@@ -195,21 +218,21 @@ class CountBytes(StaticBytes):
             if(self.count==256):
                 self.count=0
             if not self.friendly:
-                self._match=re.compile(b"^"+h2b("%0.2x" % self.count))
+                self._recompile(h2b("%0.2x" % self.count))
     def _decrement(self):
         self.count-=1
         if(self.count==-1):
             self.count=255# TODO there might be an edge case error here
                             # yup, there was. not 256, 255!
         if not self.friendly:
-            self._match=re.compile(b"^"+h2b("%0.2x" % self.count))
+            self._recompile(h2b("%0.2x" % self.count))
         super(cnt,self)._decrement()
     def match(self,msg,static=False):
         if self.uninit or self.friendly:
             self.count=int(msg[:2],16)
             self.uninit=False
             if not self.friendly:
-                self._match=re.compile(b"^"+h2b("%0.2x" % self.count))
+                self._recompile(h2b("%0.2x" % self.count))
         mtch = self._match.search(msg)
         if not static:
             self._increment()
@@ -229,7 +252,7 @@ class VariableBytes(StaticBytes):
         self.blinking=False
         self._defalut=default
         super(var,self).__init__(name,parent,"")
-        self._match=re.compile(b"^..")
+        self._recompile(b"..")
     def create(self, msg="", static=False):
         """returns:
               hex for message that would match this node

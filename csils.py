@@ -68,8 +68,12 @@ info={
         "conf":lambda:str(conf),
         "connect":lambda:"1-{} 2-{} a-all c-cancel".format(
                         conf["dev1"][0], conf["dev2"][0]),
+        "confirm":lambda:"Are you sure? (y/n)",
         "tags":lambda:"n-new d-delete",
         "newtag":lambda:entry_buf,
+        "parseTree":lambda:"name: {}  type: {}".format(
+                            parseTree[tree_curr][tree_curr_h][1].name,
+                            type(parseTree[tree_curr][tree_curr_h][1]))
         }
 curr_info="main"
 curr_mode="main"
@@ -329,7 +333,7 @@ try:
                     inp=getch()
                     if(inp=="\r"):#enter
                         parseTree[tree_curr][tree_curr_h][1].split(split_at)
-                        curr_mode="parseTree"
+                        curr_mode=curr_info="parseTree"
                         freshenParseTree()
                         split_at=1
                         break
@@ -342,10 +346,19 @@ try:
                         if(split_at==0):
                             split_at=1
                     elif(inp=="\x08" or inp=="\x7f" or inp=="c"):#backspace
-                        curr_mode="parseTree"
+                        curr_mode=curr_info="parseTree"
                         split_at=1
                         break
-
+            elif(inp=="v"):
+                last_info=curr_info
+                curr_info="confirm"
+                inp=getch()
+                if(inp=="y"):
+                    parseTree[tree_curr][tree_curr_h][1].convertToVar()
+                    freshenParseTree()
+                curr_info=last_info
+            #elif(inp=="a"):
+                #parseTree[tree_curr][tree_curr_h][1].join 
         ### Main Control ###
         elif curr_mode=="main":
             ### motion controls ###
@@ -396,7 +409,7 @@ try:
                 curr_mode="tags"
                 curr_info="tags"
             elif(inp=="p"):
-                curr_mode="parseTree"
+                curr_mode=curr_info="parseTree"
                 freshenParseTree()
         ## Config input ##
         elif curr_mode=="config":
