@@ -358,6 +358,13 @@ try:
                     parseTree[tree_curr][tree_curr_h][1].convertToVar()
                     freshenParseTree()
                 curr_info=last_info
+            elif(inp=="x"):
+                #TODO this will break going to end
+                msg = convo_log[main_curr]
+                main_curr+=1
+                dev = {dev1.name:dev1,dev2.name:dev2}[msg[1]]
+                dev.parse(parsetree.h2b(msg[2]))
+                freshenParseTree()
             #elif(inp=="a"):
                 #parseTree[tree_curr][tree_curr_h][1].join 
         ### Main Control ###
