@@ -345,14 +345,14 @@ try:
                     log_offset-=1
             elif(inp=="G"):
                 main_curr=len(convo_log)-1
-                log_offset=len(convo_log)-lines+1
+                log_offset=max(len(convo_log)-lines+1,0)
             elif(inp==""):
                 main_curr+=int(lines/2)
                 log_offset+=int(lines/2)
                 if(main_curr>=len(convo_log)):
                     main_curr=len(convo_log)-1
                 if(log_offset>=len(convo_log)-lines+1):
-                    log_offset=len(convo_log)-lines+1
+                    log_offset=max(len(convo_log)-lines+1,0)
             elif(inp==""):
                 main_curr-=int(lines/2)
                 log_offset-=int(lines/2)
