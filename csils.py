@@ -267,9 +267,6 @@ try:
         elif(inp=="m"):
             curr_info="main"
             curr_mode="main"
-        elif(inp=="p"):
-            curr_mode="parseTree"
-            freshenParseTree()
         ### Parse Tree Control ###
         elif curr_mode=="parseTree":
             ### motion controls ###
@@ -367,6 +364,9 @@ try:
             elif(inp=="t"):
                 curr_mode="tags"
                 curr_info="tags"
+            elif(inp=="p"):
+                curr_mode="parseTree"
+                freshenParseTree()
         ## Config input ##
         elif curr_mode=="config":
             if(inp=="c"):
