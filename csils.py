@@ -59,6 +59,7 @@ tags=[]
 tree_curr=0
 tree_curr_h=0
 tree_offset=0
+split_at = 1
 
 #menu vars
 info={
@@ -96,7 +97,7 @@ logfile.close()
 #############
 def updateDisplay():
     global curr_info, curr_mode, convo_log, main_curr
-    global tree_curr,tree_offset,tree_curr_h
+    global tree_curr,tree_offset,tree_curr_h, split_at
     #go to top
     print("\033[F"*lines,end="")
     print("\033[K",end="")
@@ -143,18 +144,23 @@ def updateDisplay():
             print("\033[K",end="")
             print("%8d"%count,"foo","\r")
     # print parse tree screen
-    elif(curr_mode=="parseTree"):
+    elif(curr_mode=="parseTree" or curr_mode=="treeSplit"):
         if not parseTreeLock:
             debug("tree_offset"+str(tree_offset))
             debug("len(parseTree):"+str(len(parseTree)))
             for ii in range(tree_offset,min(tree_offset+lines-1,len(parseTree))):
-                debug("index: "+str(ii))
                 line = parseTree[ii]
                 outputLine="%4d"%ii \
                         +" "
-                for jj,node in enumerate(line):
+                for jj in range(len(line)):
+                    debug(line)
+                    debug(line[jj])
+                    node = line[jj][0]
+                    node_ob = line[jj][1]
                     if ii == tree_curr and jj == tree_curr_h:
                         outputLine+="\033[1;37m"#white
+                        if(curr_mode=="treeSplit"):
+                            node=node[:split_at*2]+"\033[0;37m"+node[split_at*2:]
                     else:
                         outputLine+="\033[0;37m"#grey
                     outputLine+="|"+node
@@ -246,9 +252,9 @@ def freshenParseTree():
     d2tree=dev2.getTable()
     newParseTree = []
     for row in d1tree:
-        newParseTree+=[[dev1.name]+row]
+        newParseTree+=[[[dev1.name,dev1]]+row]
     for row in d2tree:
-        newParseTree+=[[dev2.name]+row]
+        newParseTree+=[[[dev2.name,dev2]]+row]
     parseTree=newParseTree
     parseTreeLock=False
 
@@ -315,6 +321,31 @@ try:
                     tree_curr=0
                 if(tree_offset<0):
                     tree_offset=0
+            ### other tree commands ###
+            elif(inp=="s"):
+                split_at = 1
+                curr_mode="treeSplit"
+                while True:
+                    inp=getch()
+                    if(inp=="\r"):#enter
+                        parseTree[tree_curr][tree_curr_h][1].split(split_at)
+                        curr_mode="parseTree"
+                        freshenParseTree()
+                        split_at=1
+                        break
+                    elif(inp=="l"):
+                        split_at +=1
+                        if(split_at == len(parseTree[tree_curr][tree_curr_h][0])):
+                            split_at-=1
+                    elif(inp=="h"):
+                        split_at -=1
+                        if(split_at==0):
+                            split_at=1
+                    elif(inp=="\x08" or inp=="\x7f" or inp=="c"):#backspace
+                        curr_mode="parseTree"
+                        split_at=1
+                        break
+
         ### Main Control ###
         elif curr_mode=="main":
             ### motion controls ###

@@ -54,11 +54,13 @@ class StaticBytes():
         returning the newly created begining part"""
         mtch = self._match.pattern[1:]
         new,old = mtch[:index], mtch[index:]
+        self._parent._children.remove(self)
         newBytes = StaticBytes(
                 self.name+"x",
                 self._parent,
                 new)
         self._parent = newBytes
+        newBytes._children+=[self]
         self._match = re.compile(b"^"+old)
         return(newBytes)
     def getTable(self):
@@ -69,11 +71,11 @@ class StaticBytes():
             sub_table=[]
             for child in self._children:
                 for row in child.getTable():
-                    sub_table+=[[selfspace]+row]
-            sub_table[0][0]=selfword
+                    sub_table+=[[[selfspace,self]]+row]
+            sub_table[0][0][0]=selfword
             return(sub_table)
         else:
-            return([[selfword]])
+            return([[[selfword,self]]])
     def parse(self, msg, static=False, mapping=True):
         """ returns:
                 (node that message matched,
