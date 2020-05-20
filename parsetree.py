@@ -32,7 +32,6 @@ class StaticBytes():
             parent._children+=[self]
         else:
             self._root=self
-        #mtch = cleanMsg(mtch)
         self._recompile(mtch)
     def __str__(self):
         return("<{}:{}:{}>".format(
@@ -57,13 +56,17 @@ class StaticBytes():
         returning the newly created begining part"""
         mtch = self._pattern
         new,old = mtch[:index], mtch[index:]
-        self._parent._children.remove(self)
         newBytes = StaticBytes(
-                self.name+"x",
-                self._parent,
+                self.name+"a",
+                None,
                 new)
+        index = self._parent._children.index(self)
+        self._parent._children[index]=newBytes
+        newBytes._parent=self._parent
+        newBytes._root=self._root
         self._parent = newBytes
         newBytes._children+=[self]
+        self.name+="b"
         self._recompile(old)
         return(newBytes)
     def removeNBytes(self,n):
@@ -80,12 +83,25 @@ class StaticBytes():
             self._recompile(newPattern)
             return([self])
     def convertToVar(self):
+
+        parent = self._parent
+        parent._children.remove(self)
         leng = len(self._pattern)
-        self._recompile(b"."*leng)
-        self._parent._children.remove(self)
-        for child in self._parent._children:
+        newB = VariableBytes(
+                self.name,
+                None,
+                leng)
+        for child in parent._children:
             self._children+=child.removeNBytes(leng)
-        self._parent._children = [self]
+            child._parent=newB
+        for child in self._children:
+            child._parent=newB
+        newB._children = self._children + parent._children
+        newB._parent = parent
+        parent._children=[newB]
+        del self
+
+
     def getTable(self):
         #selfword = "".join(str(x)[-2:] for x in self._match.pattern[1:])
         selfword = b2h(self._pattern)
@@ -247,12 +263,15 @@ class CountBytes(StaticBytes):
 class VariableBytes(StaticBytes):
     # matches any values??
     #TODO: add variable number of bytes to eat
-    def __init__(self,name,parent,default="00"):
+    def _recompile(self,match):
+        self._pattern = b"."*self.length
+        self._match=re.compile(b"^"+self._pattern)
+    def __init__(self,name,parent,length,default="00"):
+        self.length = length
         self.blinkval=1
         self.blinking=False
         self._defalut=default
-        super(var,self).__init__(name,parent,"")
-        self._recompile(b"..")
+        super(VariableBytes,self).__init__(name,parent,"")#this calls our recompile method
     def create(self, msg="", static=False):
         """returns:
               hex for message that would match this node

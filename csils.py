@@ -309,6 +309,8 @@ try:
                     tree_curr=len(parseTree)-1
                 elif(tree_curr>tree_offset+lines-2):
                     tree_offset+=1
+                if(tree_curr_h>=len(parseTree[tree_curr])):
+                    tree_curr_h=len(parseTree[tree_curr])-1
             elif(inp=="k"):
                 tree_curr-=1
                 if(tree_curr==-1):
