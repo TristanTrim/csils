@@ -72,9 +72,10 @@ info={
         "tags":lambda:"n-new d-delete",
         "newtag":lambda:entry_buf,
         #TODO: this can easily go out of bounds, but needs to check for that
-        "parseTree":lambda:"name: {}  type: {}".format(
+        "parseTree":lambda:"name: {}  type: {} term: {}".format(
                             parseTree[tree_curr][tree_curr_h][1].name,
-                            type(parseTree[tree_curr][tree_curr_h][1]))
+                            type(parseTree[tree_curr][tree_curr_h][1]),
+                            parseTree[tree_curr][tree_curr_h][1].terminations)
         }
 curr_info="main"
 curr_mode="main"
@@ -106,7 +107,10 @@ def updateDisplay():
     #go to top
     print("\033[F"*lines,end="")
     print("\033[K",end="")
-    print(info[curr_info]())
+    if(type(curr_info)==str):
+        print(info[curr_info]())
+    else:
+        print(curr_info())
     print("\r",end="")
     if(curr_mode=="main" or curr_mode=="tags"):
         for ii in range(log_offset,min(log_offset+lines-1,len(convo_log))):
@@ -124,8 +128,7 @@ def updateDisplay():
             outputLine="%4d"%ii \
                     +" %6dms "%(line[0]*1000)\
                     +"%4s:"%line[1] \
-                    +"%-20s"%line[2] \
-                    +"... "\
+                    +"%-20s "%line[2] \
                     +"%8s"%line[3] \
                     +"\r"
             print("\033[K",end="")
@@ -153,32 +156,31 @@ def updateDisplay():
         if not parseTreeLock:
             debug("tree_offset"+str(tree_offset))
             debug("len(parseTree):"+str(len(parseTree)))
-            for ii in range(tree_offset,min(tree_offset+lines-1,len(parseTree))):
-                debug(ii)
-                debug(tree_offset)
-                debug(len(parseTree))
-                line = parseTree[ii]
-                outputLine="%4d"%ii \
-                        +" "
-                for jj in range(len(line)):
-                    debug(line)
-                    debug(line[jj])
-                    node = line[jj][0]
-                    node_ob = line[jj][1]
-                    if ii == tree_curr and jj == tree_curr_h:
-                        outputLine+="\033[1;37m"#white
-                        if(curr_mode=="treeSplit"):
-                            node=node[:split_at*2]+"\033[0;37m"+node[split_at*2:]
-                    else:
-                        outputLine+="\033[0;37m"#grey
-                    outputLine+="|"+node
-                outputLine=outputLine[:columns-3]\
-                        +"\033[K\r"
-                print(outputLine)
+            for ii in range(tree_offset,tree_offset+lines-1):
+                if(ii)>=len(parseTree):
+                    print("\033[0;37m\r",end="")#grey
+                    print("\033[K",end="")
+                    print("...\r")
+                else:
+                    line = parseTree[ii]
+                    outputLine="%4d"%ii \
+                            +" "
+                    for jj in range(len(line)):
+                        debug(line)
+                        debug(line[jj])
+                        node = line[jj][0]
+                        node_ob = line[jj][1]
+                        if ii == tree_curr and jj == tree_curr_h:
+                            outputLine+="\033[1;37m"#white
+                            if(curr_mode=="treeSplit"):
+                                node=node[:split_at*2]+"\033[0;37m"+node[split_at*2:]
+                        else:
+                            outputLine+="\033[0;37m"#grey
+                        outputLine+="|"+node
+                    outputLine=outputLine[:columns-3]\
+                            +"\033[K\r"
+                    print(outputLine)
             print("\033[0;37m\r",end="")#grey
-            for ii in range(lines-1-len(parseTree)):
-                print("\033[K",end="")
-                print("...\r")
         else:
             for ii in range(lines-1):
                 print("\033[B\r",end="")
@@ -388,9 +390,15 @@ try:
                 #TODO this will break going to end
                 msg = convo_log[main_curr]
                 main_curr+=1
-                dev = {dev1.name:dev1,dev2.name:dev2}[msg[1]]
-                dev.parse(parsetree.h2b(msg[2]))
-                freshenParseTree()
+                if(log_offset<len(convo_log)-(lines-2)):
+                    log_offset+=1
+                if(main_curr==len(convo_log)):
+                    main_curr-=1
+                    curr_info=lambda:"At end of convo log"
+                else:
+                    dev = {dev1.name:dev1,dev2.name:dev2}[msg[1]]
+                    dev.parse(parsetree.h2b(msg[2]))
+                    freshenParseTree()
             #elif(inp=="a"):
                 #parseTree[tree_curr][tree_curr_h][1].join 
         ### Main Control ###

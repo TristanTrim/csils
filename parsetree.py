@@ -85,18 +85,23 @@ class StaticBytes():
     def convertToVar(self):
 
         parent = self._parent
-        parent._children.remove(self)
         leng = len(self._pattern)
         newB = VariableBytes(
                 self.name,
                 None,
                 leng)
-        for child in parent._children:
-            self._children+=child.removeNBytes(leng)
+        index = self._parent._children.index(self)
+        for ii in range(index):
+            child = parent._children[ii]
+            newB._children+=child.removeNBytes(leng)
             child._parent=newB
         for child in self._children:
+            newB._children+=[child]
             child._parent=newB
-        newB._children = self._children + parent._children
+        for ii in range(index+1,len(parent._children)):
+            child = parent._children[ii]
+            newB._children+=child.removeNBytes(leng)
+            child._parent=newB
         newB._parent = parent
         parent._children=[newB]
         del self
@@ -168,7 +173,7 @@ class StaticBytes():
                 StaticBytes(
                         "s%d"%self.id,
                         self,
-                        msg)
+                        msg).terminations+=1
         return(self,msg,False)
     def create(self, msg="", static=False):
         """returns:
