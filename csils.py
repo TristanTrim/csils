@@ -154,8 +154,6 @@ def updateDisplay():
     # print parse tree screen
     elif(curr_mode=="parseTree" or curr_mode=="treeSplit"):
         if not parseTreeLock:
-            debug("tree_offset"+str(tree_offset))
-            debug("len(parseTree):"+str(len(parseTree)))
             for ii in range(tree_offset,tree_offset+lines-1):
                 if(ii)>=len(parseTree):
                     print("\033[0;37m\r",end="")#grey
@@ -165,18 +163,20 @@ def updateDisplay():
                     line = parseTree[ii]
                     outputLine="%4d"%ii \
                             +" "
+                    this_line_tags = set()
                     for jj in range(len(line)):
-                        debug(line)
-                        debug(line[jj])
                         node = line[jj][0]
                         node_ob = line[jj][1]
+                        this_line_tags=this_line_tags.union(node_ob.tags)
                         if ii == tree_curr and jj == tree_curr_h:
                             outputLine+="\033[1;37m"#white
                             if(curr_mode=="treeSplit"):
                                 node=node[:split_at*2]+"\033[0;37m"+node[split_at*2:]
-                        else:
+                            outputLine+="|"+node
                             outputLine+="\033[0;37m"#grey
-                        outputLine+="|"+node
+                        else:
+                            outputLine+="|"+node
+       # show tags             outputLine+="        "+str(this_line_tags)
                     outputLine=outputLine[:columns-3]\
                             +"\033[K\r"
                     print(outputLine)
@@ -389,15 +389,19 @@ try:
             elif(inp=="x"):
                 #TODO this will break going to end
                 msg = convo_log[main_curr]
+                # move cursor
                 main_curr+=1
+                # move offset
                 if(log_offset<len(convo_log)-(lines-2)):
                     log_offset+=1
+                # parse if not at end
                 if(main_curr==len(convo_log)):
                     main_curr-=1
                     curr_info=lambda:"At end of convo log"
                 else:
                     dev = {dev1.name:dev1,dev2.name:dev2}[msg[1]]
-                    dev.parse(parsetree.h2b(msg[2]))
+                    node,msg_leftover,leaf = dev.parse(parsetree.h2b(msg[2]))
+                    node.tags+=msg[3]#tags from log
                     freshenParseTree()
             #elif(inp=="a"):
                 #parseTree[tree_curr][tree_curr_h][1].join 

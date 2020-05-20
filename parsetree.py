@@ -27,6 +27,7 @@ class StaticBytes():
         self._parent=parent
         self._children=[]
         self.terminations=0
+        self.tags=[]
         if(parent):
             self._root=parent._root
             parent._children+=[self]
