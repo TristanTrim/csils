@@ -28,22 +28,32 @@ except ModuleNotFoundError:
         return ch
 
 import json
+import yaml
 
 ### loading configuration
 default_conf_file = "conf"
 #load default conf
-conf=json.load(open("conf",'r'))
-com1=None
-com2=None
-dev1=parsetree.Root(conf["dev1"][0],None,None)
-dev2=parsetree.Root(conf["dev2"][0],None,None)
+conf=json.load(open(default_conf_file,'r'))
+
 #load log
 convo_log=[]
-logfile=open(conf["log"],'r+')
+logfile=open(conf["log"],'r')
 for line in logfile:
     convo_log+=[json.loads(line)]
 logfile.close()
 
+#parseTree
+com1=None
+com2=None
+dev1=parsetree.Root(conf["dev1"][0],None,None)
+dev2=parsetree.Root(conf["dev2"][0],None,None)
+
+try:
+    parseTreeFile = open(conf["parseTree"], 'r')
+    dev1,dev2 = yaml.load(parseTreeFile, Loader=yaml.Loader)
+    parseTreeFile.close()
+except FileNotFoundError:
+    pass
 
 def debug(msg):
     fl=open("debug","a+")
@@ -91,7 +101,7 @@ info={
         "newtag":lambda:entry_buf,
         #TODO: this can easily go out of bounds, but needs to check for that
         "parseTree":lambda:"name: {}  type: {} term: {}".format(
-                            parseTree[tree_curr][tree_curr_h][1].name,
+                            parseTree[tree_curr][tree_curr_h][1]._aname,
                             type(parseTree[tree_curr][tree_curr_h][1]),
                             parseTree[tree_curr][tree_curr_h][1].terminations)
         }
@@ -230,7 +240,7 @@ def convoLoop():
                         #log
                         new_msg=[
                                 deltaTime,
-                                dev.name,
+                                dev._aname,
                                 msg.hex(),
                                 tags[:]]
                         logfile=open(conf["log"],'a+')
@@ -271,9 +281,9 @@ def freshenParseTree():
     d2tree=dev2.getTable()
     newParseTree = []
     for row in d1tree:
-        newParseTree+=[[[dev1.name,dev1]]+row]
+        newParseTree+=[[[dev1._aname,dev1]]+row]
     for row in d2tree:
-        newParseTree+=[[[dev2.name,dev2]]+row]
+        newParseTree+=[[[dev2._aname,dev2]]+row]
     parseTree=newParseTree
     if(tree_offset>=(len(parseTree)-lines)):
         tree_offset=max(len(parseTree)-lines,0)
@@ -314,6 +324,7 @@ def startCli():
             elif(inp=="m"):
                 curr_info="main"
                 curr_mode="main"
+
             ### Parse Tree Control ###
             elif curr_mode=="parseTree":
                 ### motion controls ###
@@ -448,18 +459,18 @@ def startCli():
                         main_curr-=1
                         curr_info=lambda:"At end of convo log"
                     else:
-                        dev = {dev1.name:dev1,dev2.name:dev2}[msg[1]]
+                        dev = {dev1._aname:dev1,dev2._aname:dev2}[msg[1]]
                         node_ob,msg_leftover,leaf = dev.parse(parsetree.h2b(msg[2]))
                         node_ob.tags.update(msg[3])#tags from log
                         freshenParseTree()
                 elif(inp=="r"):
                     node_ob = parseTree[tree_curr][tree_curr_h][1]
-                    entry_buf=node_ob.name
+                    entry_buf=node_ob._aname
                     curr_info=lambda:entry_buf
                     while True:
                         inp=getch()
                         if(inp=="\r"):#enter
-                            node_ob.name=entry_buf
+                            node_ob._aname=entry_buf
                             curr_info="parseTree"
                             break
                         # windows and linux seem to have diff backspace?
@@ -471,6 +482,8 @@ def startCli():
                             entry_buf+=inp
                 #elif(inp=="a"):
                     #parseTree[tree_curr][tree_curr_h][1].join 
+
+
             ### Main Control ###
             elif curr_mode=="main":
                 ### motion controls ###
@@ -523,6 +536,19 @@ def startCli():
                 elif(inp=="p"):
                     curr_mode=curr_info="parseTree"
                     freshenParseTree()
+                #file
+                elif(inp=="f"):
+                    inp=getch()
+                    if(inp=="l"):
+                        parseTreeFile = open(conf["parseTree"], 'r')
+                        dev1,dev2 = yaml.load(parseTreeFile, Loader=yaml.Loader)
+                        parseTreeFile.close()
+                    elif(inp=="w"):
+                        parseTreeFile = open(conf["parseTree"], 'w')
+                        yaml.dump((dev1,dev2),parseTreeFile)
+                        parseTreeFile.close()
+
+
             ## Config input ##
             elif curr_mode=="config":
                 if(inp=="c"):

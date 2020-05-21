@@ -3,8 +3,9 @@ X checksum on root
 X start csills cli with function
 X rename parsetree elements
 X tags should be set
-- load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import needed stuffs)
-   - make name -> __name so it shows up first in yaml. yeah it's a kludge, but w/e
+X load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import needed stuffs)
+   X make name -> __name so it shows up first in yaml. yeah it's a kludge, but w/e
+     `->  _aname, cause __name throws mysterious errors. I guess "__" is protected?
 - tag menu e-every msg, u-unparsed msg, n-none
    - new -> add
 - replyWith & replyTo lists

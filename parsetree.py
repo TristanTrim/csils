@@ -24,7 +24,7 @@ class StaticBytes():
     def __init__(self,name,parent,mtch):
         StaticBytes.last_id+=1
         self.id=StaticBytes.last_id
-        self.name=name
+        self._aname=name
         self._parent=parent
         self._children=[]
         self.terminations=0
@@ -37,15 +37,15 @@ class StaticBytes():
         self._recompile(mtch)
     def __str__(self):
         return("<{}:{}:{}>".format(
-            self._root.name,
+            self._root._aname,
             str(type(self))[8:-2],
-            self.name))
+            self._aname))
     def __repr__(self):
         return(self.__str__())
     def c(self,childName):
         """return child with given name or None if no such child"""
         for child in self._children:
-            if child.name == childName:
+            if child._aname == childName:
                 return(child)
         return(None)
     def _decrement(self):
@@ -59,7 +59,7 @@ class StaticBytes():
         mtch = self._pattern
         new,old = mtch[:index], mtch[index:]
         newBytes = StaticBytes(
-                self.name+"a",
+                self._aname+"a",
                 None,
                 new)
         index = self._parent._children.index(self)
@@ -68,7 +68,7 @@ class StaticBytes():
         newBytes._root=self._root
         self._parent = newBytes
         newBytes._children+=[self]
-        self.name+="b"
+        self._aname+="b"
         self._recompile(old)
         return(newBytes)
     def removeNBytes(self,n):
@@ -89,7 +89,7 @@ class StaticBytes():
         parent = self._parent
         leng = len(self._pattern)
         newB = VariableBytes(
-                self.name,
+                self._aname,
                 None,
                 leng)
         index = self._parent._children.index(self)
@@ -195,18 +195,16 @@ class StaticBytes():
     def recieve(self):
         return(self._root.recieve())
 
-def genCrcChecker(checksumType,isHex=False):
-    def checksum(msg):
-        checker = checksumType()
-        if(isHex):
-            msg=bytearray.fromhex(msg)
-        checked = checker.process(msg)
-        if(isHex):
-            final = checkd.finalhex(byteorder='little')
-        else:
-            final = checked.finalbytes(byteorder='little')
-        return(final)
-    return(checksum)
+def CrcChecker(msg,checksumType,isHex=False):
+    checker = checksumType()
+    if(isHex):
+        msg=bytearray.fromhex(msg)
+    checked = checker.process(msg)
+    if(isHex):
+        final = checkd.finalhex(byteorder='little')
+    else:
+        final = checked.finalbytes(byteorder='little')
+    return(final)
 #####################
 ##    subclasses   ##
 #####################
@@ -216,11 +214,13 @@ class Root(StaticBytes):
         self.getsFrom=getsFrom
         self.sendsTo=sendsTo
         self.checksum_leng=0
-        self.checksum_func=genCrcChecker(crccheck.crc.Crc16AugCcitt)
+        self.checksum_type="crc"
+        self.crc_checksum=crccheck.crc.Crc16AugCcitt
         self._root=self
     def create(self,msg="",static=False):
         # handle checksum
-        final = self.checksum_func(msg)
+        if(self.checksum_type=="crc"):
+            final = self.CrcChecker(msg,self.crc_checksum)
         # return fully created message
         return(msg+final)
     def parse(self, msg, static=False, mapping=True):
