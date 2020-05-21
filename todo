@@ -2,7 +2,7 @@
 X checksum on root
 X start csills cli with function
 X rename parsetree elements
-- tags should be set
+X tags should be set
 - dev1 & dev2 into 'parsetree' class
    - device class with name, connection details, and parsetree
 - load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import needed stuffs)
@@ -34,3 +34,4 @@ X rename parsetree elements
 - tree sort by amount of terminations
 - some error checking on checksum leng & etc
 - use of globals should be use of common data object
+- roll tags over to new line if too long... rather than cutting off.

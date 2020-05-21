@@ -56,6 +56,7 @@ main_curr=0
 log_offset=0
 entry_buf=""
 tags=[]
+showTags=False
 tree_curr=0
 tree_curr_h=0
 tree_offset=0
@@ -181,7 +182,8 @@ def updateDisplay():
                     outputLine=outputLine[:len(outputLine)-2*node_ob._root.checksum_leng-7]\
                               +"-"\
                               +outputLine[len(outputLine)-2*node_ob._root.checksum_leng-7:]
-       # show tags             outputLine+="        "+str(this_line_tags)
+                    if(showTags):
+                        outputLine+="        "+str(this_line_tags)
                     outputLine=outputLine[:columns-3]\
                             +"\033[0;37m"\
                             +"\033[K\r"
@@ -295,6 +297,7 @@ def startCli():
     global com1, com2, dev1, dev2
     global parseTree , parseTreeLock 
     global convo_log, logfile
+    global showTags
     displayThread.start()
     convoThread.start()
     try:
@@ -397,30 +400,39 @@ def startCli():
                             curr_mode=curr_info="parseTree"
                             split_at=1
                             break
-                elif(inp=="c"):
-                    root = parseTree[tree_curr][tree_curr_h][1]._root
-                    prev_check_len=root.checksum_leng
-                    while True:
-                        inp=getch()
-                        if(inp=="\r"):#enter
-                            break
-                        elif(inp=="l"):
-                            root.checksum_leng-=1
-                            if(root.checksum_leng==-1):
-                                root.checksum_leng=0
-                        elif(inp=="h"):
-                            root.checksum_leng+=1
-                        elif(inp=="\x08" or inp=="\x7f" or inp=="c"):#backspace
-                            root.checksum_leng=prev_check_len
-                            break
+                #view
                 elif(inp=="v"):
-                    last_info=curr_info
-                    curr_info="confirm"
                     inp=getch()
-                    if(inp=="y"):
-                        parseTree[tree_curr][tree_curr_h][1].convertToVar()
-                        freshenParseTree()
-                    curr_info=last_info
+                    #tags
+                    if(inp=="t"):
+                        showTags = not showTags
+                #change
+                elif(inp=="c"):
+                    inp=getch()
+                    if(inp=="c"):
+                        root = parseTree[tree_curr][tree_curr_h][1]._root
+                        prev_check_len=root.checksum_leng
+                        while True:
+                            inp=getch()
+                            if(inp=="\r"):#enter
+                                break
+                            elif(inp=="l"):
+                                root.checksum_leng-=1
+                                if(root.checksum_leng==-1):
+                                    root.checksum_leng=0
+                            elif(inp=="h"):
+                                root.checksum_leng+=1
+                            elif(inp=="\x08" or inp=="\x7f" or inp=="c"):#backspace
+                                root.checksum_leng=prev_check_len
+                                break
+                    elif(inp=="v"):
+                        last_info=curr_info
+                        curr_info="confirm"
+                        inp=getch()
+                        if(inp=="y"):
+                            parseTree[tree_curr][tree_curr_h][1].convertToVar()
+                            freshenParseTree()
+                        curr_info=last_info
                 elif(inp=="x"):
                     #TODO this will break going to end
                     msg = convo_log[main_curr]
@@ -436,7 +448,7 @@ def startCli():
                     else:
                         dev = {dev1.name:dev1,dev2.name:dev2}[msg[1]]
                         node_ob,msg_leftover,leaf = dev.parse(parsetree.h2b(msg[2]))
-                        node_ob.tags+=msg[3]#tags from log
+                        node_ob.tags.update(msg[3])#tags from log
                         freshenParseTree()
                 elif(inp=="r"):
                     node_ob = parseTree[tree_curr][tree_curr_h][1]
