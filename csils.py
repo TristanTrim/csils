@@ -165,19 +165,25 @@ def updateDisplay():
                             +" "
                     this_line_tags = set()
                     for jj in range(len(line)):
-                        node = line[jj][0]
+                        node_str = line[jj][0]
                         node_ob = line[jj][1]
                         this_line_tags=this_line_tags.union(node_ob.tags)
                         if ii == tree_curr and jj == tree_curr_h:
                             outputLine+="\033[1;37m"#white
                             if(curr_mode=="treeSplit"):
-                                node=node[:split_at*2]+"\033[0;37m"+node[split_at*2:]
-                            outputLine+="|"+node
+                                node_str=node_str[:split_at*2]+"\033[0;37m"+node_str[split_at*2:]
+                            outputLine+="|"+node_str
                             outputLine+="\033[0;37m"#grey
                         else:
-                            outputLine+="|"+node
+                            outputLine+="|"+node_str
+                            outputLine+="\033[0;37m"#grey
+                    #checksum indicator
+                    outputLine=outputLine[:len(outputLine)-2*node_ob._root.checksum_leng-7]\
+                              +"-"\
+                              +outputLine[len(outputLine)-2*node_ob._root.checksum_leng-7:]
        # show tags             outputLine+="        "+str(this_line_tags)
                     outputLine=outputLine[:columns-3]\
+                            +"\033[0;37m"\
                             +"\033[K\r"
                     print(outputLine)
             print("\033[0;37m\r",end="")#grey
@@ -378,6 +384,22 @@ try:
                         curr_mode=curr_info="parseTree"
                         split_at=1
                         break
+            elif(inp=="c"):
+                root = parseTree[tree_curr][tree_curr_h][1]._root
+                prev_check_len=root.checksum_leng
+                while True:
+                    inp=getch()
+                    if(inp=="\r"):#enter
+                        break
+                    elif(inp=="l"):
+                        root.checksum_leng-=1
+                        if(root.checksum_leng==-1):
+                            root.checksum_leng=0
+                    elif(inp=="h"):
+                        root.checksum_leng+=1
+                    elif(inp=="\x08" or inp=="\x7f" or inp=="c"):#backspace
+                        root.checksum_leng=prev_check_len
+                        break
             elif(inp=="v"):
                 last_info=curr_info
                 curr_info="confirm"
@@ -400,8 +422,8 @@ try:
                     curr_info=lambda:"At end of convo log"
                 else:
                     dev = {dev1.name:dev1,dev2.name:dev2}[msg[1]]
-                    node,msg_leftover,leaf = dev.parse(parsetree.h2b(msg[2]))
-                    node.tags+=msg[3]#tags from log
+                    node_ob,msg_leftover,leaf = dev.parse(parsetree.h2b(msg[2]))
+                    node_ob.tags+=msg[3]#tags from log
                     freshenParseTree()
             #elif(inp=="a"):
                 #parseTree[tree_curr][tree_curr_h][1].join 

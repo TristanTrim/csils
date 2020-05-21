@@ -30,3 +30,5 @@
 -checksum as 'msg fin' check
 -test for checksum longer than msg in display or elsewhere
 
+-tree sort by amount of terminations
+-some error checking on checksum leng & etc

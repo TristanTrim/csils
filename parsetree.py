@@ -33,7 +33,7 @@ class StaticBytes():
             self._root=parent._root
             parent._children+=[self]
         else:
-            self._root=self
+            self._root=None
         self._recompile(mtch)
     def __str__(self):
         return("<{}:{}:{}>".format(
@@ -105,6 +105,7 @@ class StaticBytes():
             newB._children+=child.removeNBytes(leng)
             child._parent=newB
         newB._parent = parent
+        newB._root=self._root
         parent._children=[newB]
         del self
 
@@ -222,6 +223,9 @@ class Root(StaticBytes):
         final = self.checksum_func(msg)
         # return fully created message
         return(msg+final)
+    def parse(self, msg, static=False, mapping=True):
+        msg=msg[:len(msg)-self.checksum_leng]+b"."*self.checksum_leng
+        return(super(Root,self).parse(msg, static=static, mapping=mapping))
     def send(self,bmsg):
         """sends to device if connected, or if not connected, silently fails"""
         if(self.sendsTo):
