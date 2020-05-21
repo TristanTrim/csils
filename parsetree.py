@@ -1,4 +1,5 @@
 import re
+import crccheck
 
 def b2h(bytmsg):
     """takes bytearray returns hex"""
@@ -193,6 +194,18 @@ class StaticBytes():
     def recieve(self):
         return(self._root.recieve())
 
+def genCrcChecker(checksumType,isHex=False):
+    def checksum(msg):
+        checker = checksumType()
+        if(isHex):
+            msg=bytearray.fromhex(msg)
+        checked = checker.process(msg)
+        if(isHex):
+            final = checkd.finalhex(byteorder='little')
+        else:
+            final = checked.finalbytes(byteorder='little')
+        return(final)
+    return(checksum)
 #####################
 ##    subclasses   ##
 #####################
@@ -201,12 +214,12 @@ class Root(StaticBytes):
         super(Root,self).__init__(name,None,b"")
         self.getsFrom=getsFrom
         self.sendsTo=sendsTo
+        self.checksum_leng=0
+        self.checksum_func=genCrcChecker(crccheck.crc.Crc16AugCcitt)
+        self._root=self
     def create(self,msg="",static=False):
         # handle checksum
-        chckr = Crc16AugCcitt()
-        valid_senDmp1BYTES=bytearray.fromhex(msg)
-        checkd = chckr.process(valid_senDmp1BYTES)
-        final = checkd.finalhex(byteorder='little')
+        final = self.checksum_func(msg)
         # return fully created message
         return(msg+final)
     def send(self,bmsg):

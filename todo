@@ -1,4 +1,32 @@
 
+-abstract cursor including 'cur_ob' and such
 -create 'default'/'demo' config
 -"r+" doesn't read or create? I guess I could just try to read and if the files not there read nothing...
 -add empty line at bottom of log for following new messages
+-reconfigure display 'for loops' to be for n lines and use if & offsets within to print info
+
+-checksum on root
+-start csills cli with function
+-rename parsetree elements
+-tags should be set
+-dev1 & dev2 into 'parsetree' class
+  -device class with name, connection details, and parsetree
+-load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import needed stuffs)
+  -make name -> __name so it shows up first in yaml. yeah it's a kludge, but w/e
+-tag menu e-every msg, u-unparsed msg, n-none
+  -new -> add
+-replyWith & replyTo lists
+  -slave replyWith and master replyTo will be nonsense...?
+-delete nodes
+-figure out what 'nodes;identities;bytes;brances;parts of parsetree' should actually be called...
+-blink node on new term there
+
+-send msgs and 'catch' responses?
+-msg parse based flow control?
+-blink/flash in io
+-join nodes
+-show parsing in main log (optional?)
+-config file yaml
+-checksum as 'msg fin' check
+-test for checksum longer than msg in display or elsewhere
+
