@@ -3,8 +3,6 @@ X checksum on root
 X start csills cli with function
 X rename parsetree elements
 X tags should be set
-- dev1 & dev2 into 'parsetree' class
-   - device class with name, connection details, and parsetree
 - load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import needed stuffs)
    - make name -> __name so it shows up first in yaml. yeah it's a kludge, but w/e
 - tag menu e-every msg, u-unparsed msg, n-none
@@ -35,3 +33,6 @@ X tags should be set
 - some error checking on checksum leng & etc
 - use of globals should be use of common data object
 - roll tags over to new line if too long... rather than cutting off.
+- only update display on change
+- dev1 & dev2 into 'parsetree' class
+   - device class with name, connection details, and parsetree

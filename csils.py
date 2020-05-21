@@ -29,12 +29,29 @@ except ModuleNotFoundError:
 
 import json
 
+### loading configuration
+default_conf_file = "conf"
+#load default conf
+conf=json.load(open("conf",'r'))
+com1=None
+com2=None
+dev1=parsetree.Root(conf["dev1"][0],None,None)
+dev2=parsetree.Root(conf["dev2"][0],None,None)
+#load log
+convo_log=[]
+logfile=open(conf["log"],'r+')
+for line in logfile:
+    convo_log+=[json.loads(line)]
+logfile.close()
+
+
 def debug(msg):
     fl=open("debug","a+")
     fl.write(str(msg))
     fl.write("\n")
     fl.flush()
     fl.close()
+
 # get the size of the terminal
 import os
 rows, columns = (int(x) for x in os.popen('stty size', 'r').read().split())
@@ -46,12 +63,11 @@ _=subprocess.call("",shell=True)
 count = 0
 
 # config vars
+running = True
 lines = rows-3#13
 print("\n"*lines)
 display_rate = .05
 convo_rate = .01
-running = True
-default_conf_file = "conf"
 main_curr=0
 log_offset=0
 entry_buf=""
@@ -61,6 +77,7 @@ tree_curr=0
 tree_curr_h=0
 tree_offset=0
 split_at = 1
+
 
 #menu vars
 info={
@@ -81,23 +98,8 @@ info={
 curr_info="main"
 curr_mode="main"
 
-#load default conf
-conf=json.load(open("conf",'r'))
-
-com1=None
-com2=None
-dev1=parsetree.Root(conf["dev1"][0],None,None)
-dev2=parsetree.Root(conf["dev2"][0],None,None)
-
 parseTree = None
 parseTreeLock = True
-
-#load log
-convo_log=[]
-logfile=open(conf["log"],'r+')
-for line in logfile:
-    convo_log+=[json.loads(line)]
-logfile.close()
 
 #############
 ## Display ##

@@ -320,3 +320,11 @@ class VariableBytes(StaticBytes):
         self._defalut=msg[:2]
         return(self._match.search(msg))
 
+#class ParseTree():
+#    def __init__(self,devices,logName="convoLog"):
+#        if all( type(x)==Root for x in devices):
+#            self.devices=devices
+#        else:
+#            raise Exception("All devices must be member of class parsetree.Root")
+#        self.logName=logName
+
