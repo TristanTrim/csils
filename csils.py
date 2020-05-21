@@ -438,6 +438,23 @@ def startCli():
                         node_ob,msg_leftover,leaf = dev.parse(parsetree.h2b(msg[2]))
                         node_ob.tags+=msg[3]#tags from log
                         freshenParseTree()
+                elif(inp=="r"):
+                    node_ob = parseTree[tree_curr][tree_curr_h][1]
+                    entry_buf=node_ob.name
+                    curr_info=lambda:entry_buf
+                    while True:
+                        inp=getch()
+                        if(inp=="\r"):#enter
+                            node_ob.name=entry_buf
+                            curr_info="parseTree"
+                            break
+                        # windows and linux seem to have diff backspace?
+                        # or is it my keyboard?
+                        # anyway:  windows        linux
+                        elif(inp=="\x08" or inp=="\x7f"):#backspace
+                            entry_buf=entry_buf[:-1]
+                        else:
+                            entry_buf+=inp
                 #elif(inp=="a"):
                     #parseTree[tree_curr][tree_curr_h][1].join 
             ### Main Control ###

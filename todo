@@ -1,7 +1,7 @@
 
 X checksum on root
-- start csills cli with function
-- rename parsetree elements
+X start csills cli with function
+X rename parsetree elements
 - tags should be set
 - dev1 & dev2 into 'parsetree' class
    - device class with name, connection details, and parsetree
