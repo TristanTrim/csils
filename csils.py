@@ -81,7 +81,14 @@ convo_rate = .01
 main_curr=0
 log_offset=0
 entry_buf=""
-tags=[]
+
+tag_curr=0
+tag_menu_offset=0
+
+
+tags = []
+tags_every=set()
+tags_unparsed=set()
 showTags=False
 tree_curr=0
 tree_curr_h=0
@@ -97,7 +104,7 @@ info={
         "connect":lambda:"1-{} 2-{} a-all c-cancel".format(
                         conf["dev1"][0], conf["dev2"][0]),
         "confirm":lambda:"Are you sure? (y/n)",
-        "tags":lambda:"n-new d-delete",
+        "tags":lambda:"a-add e-every u-unparsed n-none",
         "newtag":lambda:entry_buf,
         #TODO: this can easily go out of bounds, but needs to check for that
         "parseTree":lambda:"name: {}  type: {} term: {}".format(
@@ -117,6 +124,7 @@ parseTreeLock = True
 def updateDisplay():
     global curr_info, curr_mode, convo_log, main_curr
     global tree_curr,tree_offset,tree_curr_h, split_at
+    global tags, tag_curr
     #go to top
     print("\033[F"*lines,end="")
     print("\033[K",end="")
@@ -125,7 +133,7 @@ def updateDisplay():
     else:
         print(curr_info())
     print("\r",end="")
-    if(curr_mode=="main" or curr_mode=="tags"):
+    if(curr_mode=="main"):
         for ii in range(log_offset,min(log_offset+lines-1,len(convo_log))):
             line = convo_log[ii]
             if ii == main_curr:
@@ -150,6 +158,23 @@ def updateDisplay():
         for ii in range(lines-1-len(convo_log)):
             print("\033[K",end="")
             print("...\r")
+    ### print tags screen ###
+    elif(curr_mode=="tags"):
+        for ii in range(lines-1):
+            if( ii+tag_menu_offset < len(tags) ):
+                tag_name, tag_status = tags[ii+tag_menu_offset]
+                if(ii+tag_menu_offset==tag_curr):
+                    print("\033[1;37m",end="")#white
+                else:
+                    print("\033[0;37m",end="")#grey
+                outputLine="%4d"%(ii+tag_menu_offset)\
+                          +" %s"%tag_status\
+                          +" - %s"%tag_name
+            else:
+                outputLine="`'-~-'``'-~-'``'-~-'``'-~-'``'-~-'`"
+            print("\033[K",end="")
+            print(outputLine[:columns])
+        print("\033[0;37m\r",end="")#grey
     # print config screen
     elif(curr_mode=="config"):
         for dev,devstr in (dev1,"dev1"),(dev2,"dev2"):
@@ -223,10 +248,10 @@ displayThread = threading.Thread(target=displayLoop)
 ###########
 def convoLoop():
     try:# everything is in try loop so thread can be stopped
-        global running, count, convo_log, tags
+        global running, count, convo_log
+        global tags_every, tags_unparsed
         global log_offset,main_curr
         global tree_offset,tree_curr,tree_curr_h,parseTree
-        tags=['unknown']
         lastTime=time()
         while(running):
             for dev in dev1,dev2:
@@ -237,20 +262,26 @@ def convoLoop():
                         thisTime=time()
                         deltaTime=thisTime-lastTime
                         lastTime=thisTime
+                        #parse
+                        node_ob,leftover_msg,leaf = dev.parse(msg)
                         #log
+                        debug(node_ob)
+                        debug(node_ob.terminations)
+                        if(node_ob.terminations==1):
+                            #ie, node is new
+                            relevent_tags = tags_unparsed | tags_every
+                        else:
+                            relevent_tags = tags_every
                         new_msg=[
                                 deltaTime,
                                 dev._aname,
                                 msg.hex(),
-                                tags[:]]
+                                list(relevent_tags)]
                         logfile=open(conf["log"],'a+')
                         json.dump(new_msg,logfile)
                         logfile.write('\n')
                         logfile.close()
                         convo_log+=[new_msg]
-                        #parse
-                        parsed = dev.parse(msg)
-                        debug(parsed)
                         # scroll if cursor at bottom
                         if(main_curr==len(convo_log)-2):
                             main_curr+=1
@@ -303,7 +334,9 @@ def startCli():
     global running 
     global default_conf_file 
     global main_curr, log_offset, entry_buf
-    global tags, tree_curr, tree_curr_h, tree_offset
+    global tree_curr, tree_curr_h, tree_offset
+    global tags, tags_unparsed, tags_every
+    global tag_curr, tag_menu_offset
     global split_at , curr_info, curr_mode
     global conf
     global com1, com2, dev1, dev2
@@ -582,14 +615,54 @@ def startCli():
 
             ## Tags input ##
             elif curr_mode=="tags":
-                if(inp=="n"):
+                ## tag menu movements ##
+                ## gg latch ##
+                if(inp=="g"):
+                    if(gg):
+                        tag_curr=0
+                        tag_menu_offset=0
+                    else:
+                        gg=True
+                else:
+                    gg=False
+                ## other motion ##
+                if(inp=="j"):
+                    tag_curr+=1
+                    if(tag_curr==len(tags)):
+                        tag_curr=len(tags)-1
+                    elif(tag_curr>tag_menu_offset+lines-2):
+                        tag_menu_offset+=1
+                elif(inp=="k"):
+                    tag_curr-=1
+                    if(tag_curr==-1):
+                        tag_curr=0
+                    elif(tag_curr<tag_menu_offset):
+                        tag_menu_offset-=1
+                elif(inp=="G"):
+                    tag_curr=len(tags)-1
+                    tag_menu_offset=max(len(tags)-lines+1,0)
+                elif(inp==""):
+                    tag_curr+=int(lines/2)
+                    tag_menu_offset+=int(lines/2)
+                    if(tag_curr>=len(tags)):
+                        tag_curr=len(tags)-1
+                    if(tag_menu_offset>=len(tags)-lines+1):
+                        tag_menu_offset=max(len(tags)-lines+1,0)
+                elif(inp==""):
+                    tag_curr-=int(lines/2)
+                    tag_menu_offset-=int(lines/2)
+                    if(tag_curr<0):
+                        tag_curr=0
+                    if(tag_menu_offset<0):
+                        tag_menu_offset=0
+                ## other tag commands ##
+                elif(inp=="a"):
                     curr_info="newtag"
                     entry_buf=""
                     while True:
                         inp=getch()
                         if(inp=="\r"):#enter
-                            tags+=[entry_buf]
-                            curr_mode=curr_info="main"
+                            tags+=[[entry_buf,'n']]
                             break
                         # windows and linux seem to have diff backspace?
                         # or is it my keyboard?
@@ -598,6 +671,20 @@ def startCli():
                             entry_buf=entry_buf[:-1]
                         else:
                             entry_buf+=inp
+                elif(inp=="m"):
+                    curr_mode=curr_info="main"
+                elif(inp=="e"):
+                    tags_every.add(tags[tag_curr][0])
+                    tags_unparsed.discard(tags[tag_curr][0])
+                    tags[tag_curr][1]='e'
+                elif(inp=="u"):
+                    tags_unparsed.add(tags[tag_curr][0])
+                    tags_every.discard(tags[tag_curr][0])
+                    tags[tag_curr][1]='u'
+                elif(inp=="n"):
+                    tags_every.discard(tags[tag_curr][0])
+                    tags_unparsed.discard(tags[tag_curr][0])
+                    tags[tag_curr][1]='n'
     except Exception:
         print(traceback.format_exc(),end="\n\r")
         running=False
@@ -606,12 +693,6 @@ def startCli():
     print("\033[1;37m",end="")
     # show cursor
     print("\033[?25h",end="")
-
-
-
-
-
-
 
 if __name__ == "__main__":
     startCli()

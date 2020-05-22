@@ -6,13 +6,14 @@ X tags should be set
 X load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import needed stuffs)
    X make name -> __name so it shows up first in yaml. yeah it's a kludge, but w/e
      `->  _aname, cause __name throws mysterious errors. I guess "__" is protected?
-- tag menu e-every msg, u-unparsed msg, n-none
-   - new -> add
+X tag menu e-every msg, u-unparsed msg, n-none
+   X new -> add
 - replyWith & replyTo lists
    - slave replyWith and master replyTo will be nonsense...?
 - delete nodes
+- abstract cursor including 'cur_ob' and such
 - figure out what 'nodes;identities;bytes;brances;parts of parsetree' should actually be called...
-- blink node on new term there
+- blink node in parseTree view on new termination there
 
 - send msgs and 'catch' responses?
 - msg parse based flow control?
@@ -23,8 +24,8 @@ X load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import n
 - checksum as 'msg fin' check
 - test for checksum longer than msg in display or elsewhere
 
+- utf-8 can't decode arrow keys
 
-- abstract cursor including 'cur_ob' and such
 - create 'default'/'demo' config
 - "r+" doesn't read or create? I guess I could just try to read and if the files not there read nothing...
 - add empty line at bottom of log for following new messages
@@ -37,3 +38,5 @@ X load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import n
 - only update display on change
 - dev1 & dev2 into 'parsetree' class
    - device class with name, connection details, and parsetree
+- configuration of save filenames
+- default "first_parse" tag set to "u" for purpose of filtering log

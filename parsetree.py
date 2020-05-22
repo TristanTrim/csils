@@ -173,10 +173,12 @@ class StaticBytes():
                     return(new_matching_child,msg_left,False)
             # if no partial match with any existing child
             else:
-                StaticBytes(
-                        "s%d"%self.id,
-                        self,
-                        msg).terminations+=1
+                newBytes = StaticBytes(
+                                "s%d"%self.id,
+                                self,
+                                msg)
+                newBytes.terminations+=1
+                return(newBytes, b"", True)
         return(self,msg,False)
     def create(self, msg="", static=False):
         """returns:
