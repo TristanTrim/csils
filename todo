@@ -8,7 +8,7 @@ X load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import n
      `->  _aname, cause __name throws mysterious errors. I guess "__" is protected?
 X tag menu e-every msg, u-unparsed msg, n-none
    X new -> add
-- replyWith & replyTo lists
+- replyWith & replyTo lists (not lists, defaultDict counters?)
    - slave replyWith and master replyTo will be nonsense...?
 - delete nodes
 - abstract cursor including 'cur_ob' and such
