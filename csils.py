@@ -86,7 +86,11 @@ tag_curr=0
 tag_menu_offset=0
 
 
-tags = []
+tags = [
+        ["first_sighting","u"],
+        ["hello","n"],
+        ["goodbye","n"]
+        ]
 tags_every=set()
 tags_unparsed=set()
 showTags=False
@@ -442,7 +446,7 @@ def startCli():
                             split_at -=1
                             if(split_at==0):
                                 split_at=1
-                        elif(inp=="\x08" or inp=="\x7f" or inp=="c"):#backspace
+                        elif(inp in ("\x08", "\x7f", "c", "")):#backspace,c,esc
                             curr_mode=curr_info="parseTree"
                             split_at=1
                             break
@@ -468,7 +472,7 @@ def startCli():
                                     root.checksum_leng=0
                             elif(inp=="h"):
                                 root.checksum_leng+=1
-                            elif(inp=="\x08" or inp=="\x7f" or inp=="c"):#backspace
+                            elif(inp in ("\x08", "\x7f", "c", "")):#backspace
                                 root.checksum_leng=prev_check_len
                                 break
                     elif(inp=="v"):
@@ -504,6 +508,9 @@ def startCli():
                         inp=getch()
                         if(inp=="\r"):#enter
                             node_ob._aname=entry_buf
+                            curr_info="parseTree"
+                            break
+                        elif(inp==""):
                             curr_info="parseTree"
                             break
                         # windows and linux seem to have diff backspace?
@@ -662,7 +669,11 @@ def startCli():
                     while True:
                         inp=getch()
                         if(inp=="\r"):#enter
+                            curr_info="tags"
                             tags+=[[entry_buf,'n']]
+                            break
+                        elif(inp==""):
+                            curr_info="tags"
                             break
                         # windows and linux seem to have diff backspace?
                         # or is it my keyboard?
