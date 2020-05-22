@@ -587,7 +587,19 @@ def startCli():
                         parseTreeFile = open(conf["parseTree"], 'w')
                         yaml.dump((dev1,dev2),parseTreeFile)
                         parseTreeFile.close()
-
+                elif(inp=="v"):
+                    curr_info=lambda:"t-timing d-default"
+                    while True:
+                        inp=getch()
+                        if(inp=="t"):
+                            for ii in range(len(convo_log)-1,-1,-1):
+                                ms=convo_log[ii][0]
+                                newlines = min(int(ms*20),13)
+                                convo_log = convo_log[:ii]+newlines*[[0,"~","~",[""]]]+convo_log[ii:]
+                            break
+                        elif(inp=="d"):
+                            convo_log = [x for x in convo_log if x != [0,"~","~",[""]] ]
+                            break
 
             ## Config input ##
             elif curr_mode=="config":
