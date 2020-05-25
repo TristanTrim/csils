@@ -1,0 +1,259 @@
+!!python/tuple
+- &id001 !!python/object:parsetree.Root
+  _aname: slc
+  _children: []
+  _match: &id011 !!python/object/apply:re._compile
+  - !!binary |
+    Xg==
+  - 0
+  _parent: null
+  _pattern: !!binary ""
+  _root: *id001
+  checksum_leng: 0
+  checksum_type: crc
+  crc_checksum: &id012 !!python/name:crccheck.crc.Crc16AugCcitt ''
+  getsFrom: null
+  id: 2
+  sendsTo: null
+  tags: !!set {}
+  terminations: 0
+- &id003 !!python/object:parsetree.Root
+  _aname: dia
+  _children:
+  - &id007 !!python/object:parsetree.StaticBytes
+    _aname: s3aa
+    _children:
+    - &id006 !!python/object:parsetree.StaticBytes
+      _aname: s3ab
+      _children:
+      - &id004 !!python/object:parsetree.VariableBytes
+        _aname: s3ba
+        _children:
+        - &id002 !!python/object:parsetree.StaticBytes
+          _aname: s3bba
+          _children:
+          - !!python/object:parsetree.StaticBytes
+            _aname: s3bbb
+            _children: []
+            _match: !!python/object/apply:re._compile
+            - !!binary |
+              XlwLAAQABwABAQEFAgUETzs=
+            - 0
+            _parent: *id002
+            _pattern: !!python/object/apply:builtins.bytearray
+            - "\v\0\x04\0\a\0\x01\x01\x01\x05\x02\x05\x04O;"
+            - latin-1
+            _root: *id003
+            id: 4
+            tags: !!set {}
+            terminations: 1
+          - !!python/object:parsetree.StaticBytes
+            _aname: requestSensorData
+            _children: []
+            _match: !!python/object/apply:re._compile
+            - !!binary |
+              XlwLAAQABwABAQEFAgUEXC5cLg==
+            - 0
+            _parent: *id002
+            _pattern: !!python/object/apply:builtins.bytearray
+            - "\v\0\x04\0\a\0\x01\x01\x01\x05\x02\x05\x04.."
+            - latin-1
+            _root: *id003
+            id: 4
+            tags: !!set
+              unknown: null
+            terminations: 53
+          _match: !!python/object/apply:re._compile
+          - !!binary |
+            XgE=
+          - 0
+          _parent: *id004
+          _pattern: !!python/object/apply:builtins.bytearray
+          - "\x01"
+          - latin-1
+          _root: *id003
+          id: 6
+          tags: !!set
+            unknown: null
+          terminations: 0
+        - &id005 !!python/object:parsetree.StaticBytes
+          _aname: s5a
+          _children:
+          - !!python/object:parsetree.StaticBytes
+            _aname: reqMonConToSlc
+            _children: []
+            _match: !!python/object/apply:re._compile
+            - !!binary |
+              XgIAXC5cLg==
+            - 0
+            _parent: *id005
+            _pattern: !!python/object/apply:builtins.bytearray
+            - "\x02\0.."
+            - latin-1
+            _root: *id003
+            id: 8
+            tags: !!set
+              remote screen tries to connect: null
+              remote screen tries to connect2: null
+              unknown: null
+            terminations: 77
+          - !!python/object:parsetree.StaticBytes
+            _aname: s11
+            _children: []
+            _match: &id008 !!python/object/apply:re._compile
+            - !!binary |
+              XlwuXC4=
+            - 0
+            _parent: *id005
+            _pattern: !!python/object/apply:builtins.bytearray
+            - ..
+            - latin-1
+            _root: *id003
+            id: 12
+            tags: !!set {}
+            terminations: 1
+          _match: !!python/object/apply:re._compile
+          - !!binary |
+            XgACAA==
+          - 0
+          _parent: *id004
+          _pattern: !!python/object/apply:builtins.bytearray
+          - "\0\x02\0"
+          - latin-1
+          _root: *id003
+          id: 11
+          tags: !!set
+            remote screen tries to connect2: null
+            unknown: null
+          terminations: 0
+        _defalut: !!python/object/apply:builtins.bytearray
+        - "\x01\0"
+        - latin-1
+        _match: !!python/object/apply:re._compile
+        - !!binary |
+          Xi4u
+        - 0
+        _parent: *id006
+        _pattern: !!binary |
+          Li4=
+        _root: *id003
+        blinking: false
+        blinkval: 1
+        id: 5
+        length: 2
+        tags: !!set
+          unknown: null
+        terminations: 0
+      _match: &id009 !!python/object/apply:re._compile
+      - !!binary |
+        XqU=
+      - 0
+      _parent: *id007
+      _pattern: !!python/object/apply:builtins.bytearray
+      - "\xA5"
+      - latin-1
+      _root: *id003
+      id: 5
+      tags: !!set
+        unknown: null
+      terminations: 0
+    - !!python/object:parsetree.StaticBytes
+      _aname: s5
+      _children: []
+      _match: *id008
+      _parent: *id007
+      _pattern: !!python/object/apply:builtins.bytearray
+      - ..
+      - latin-1
+      _root: *id003
+      id: 6
+      tags: !!set
+        remote screen tries to connect: null
+        remote screen tries to connect2: null
+        unknown: null
+      terminations: 4
+    _match: *id009
+    _parent: *id003
+    _pattern: !!python/object/apply:builtins.bytearray
+    - "\xA5"
+    - latin-1
+    _root: *id003
+    id: 5
+    tags: !!set
+      unknown: null
+    terminations: 0
+  - &id010 !!python/object:parsetree.StaticBytes
+    _aname: s3a
+    _children:
+    - !!python/object:parsetree.StaticBytes
+      _aname: s3b
+      _children: []
+      _match: !!python/object/apply:re._compile
+      - !!binary |
+        XgFcCwAEAAcAAQEBBQIFBFwuXC4=
+      - 0
+      _parent: *id010
+      _pattern: !!python/object/apply:builtins.bytearray
+      - "\x01\v\0\x04\0\a\0\x01\x01\x01\x05\x02\x05\x04.."
+      - latin-1
+      _root: *id003
+      id: 7
+      tags: !!set {}
+      terminations: 1
+    - !!python/object:parsetree.StaticBytes
+      _aname: s9
+      _children: []
+      _match: !!python/object/apply:re._compile
+      - !!binary |
+        XgACAAIAXC5cLg==
+      - 0
+      _parent: *id010
+      _pattern: !!python/object/apply:builtins.bytearray
+      - "\0\x02\0\x02\0.."
+      - latin-1
+      _root: *id003
+      id: 10
+      tags: !!set
+        remote screen tries to connect: null
+        remote screen tries to connect2: null
+        unknown: null
+      terminations: 3
+    _match: !!python/object/apply:re._compile
+    - !!binary |
+      XgA=
+    - 0
+    _parent: *id003
+    _pattern: !!python/object/apply:builtins.bytearray
+    - "\0"
+    - latin-1
+    _root: *id003
+    id: 9
+    tags: !!set
+      unknown: null
+    terminations: 0
+  - !!python/object:parsetree.StaticBytes
+    _aname: s3
+    _children: []
+    _match: *id008
+    _parent: *id003
+    _pattern: !!python/object/apply:builtins.bytearray
+    - ..
+    - latin-1
+    _root: *id003
+    id: 13
+    tags: !!set {}
+    terminations: 1
+  _match: *id011
+  _parent: null
+  _pattern: !!binary ""
+  _root: *id003
+  checksum_leng: 2
+  checksum_type: crc
+  crc_checksum: *id012
+  getsFrom: null
+  id: 3
+  sendsTo: null
+  tags: !!set
+    remote screen tries to connect2: null
+    unknown: null
+  terminations: 0
