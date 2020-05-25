@@ -8,12 +8,13 @@ X load/save parsetree with yaml! (remember to 'Loader=yaml.Loader', and import n
      `->  _aname, cause __name throws mysterious errors. I guess "__" is protected?
 X tag menu e-every msg, u-unparsed msg, n-none
    X new -> add
+- delete nodes
+- blink node in parseTree view on new termination there
 - replyWith & replyTo lists (not lists, defaultDict counters?)
    - slave replyWith and master replyTo will be nonsense...?
-- delete nodes
+     '-> timeout cutoff for connection
 - abstract cursor including 'cur_ob' and such
 - figure out what 'nodes;identities;bytes;brances;parts of parsetree' should actually be called...
-- blink node in parseTree view on new termination there
 
 - send msgs and 'catch' responses?
 - msg parse based flow control?
