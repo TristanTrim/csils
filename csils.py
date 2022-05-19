@@ -266,6 +266,7 @@ def convoLoop():
                         thisTime=time()
                         deltaTime=thisTime-lastTime
                         lastTime=thisTime
+
                         #parse
                         node_ob,leftover_msg,leaf = dev.parse(msg)
                         #log
@@ -281,11 +282,12 @@ def convoLoop():
                                 dev._aname,
                                 msg.hex(),
                                 list(relevent_tags)]
+                        convo_log+=[new_msg]
+
                         logfile=open(conf["log"],'a+')
                         json.dump(new_msg,logfile)
                         logfile.write('\n')
                         logfile.close()
-                        convo_log+=[new_msg]
                         # scroll if cursor at bottom
                         if(main_curr==len(convo_log)-2):
                             main_curr+=1
@@ -608,9 +610,15 @@ def startCli():
                     curr_info="connect"
                     inp=getch()
                     if(inp=="1" or inp=="a"):
-                        com1=serial.Serial( *conf["dev1"][1], timeout=0)
+                        com1=serial.Serial(
+                                conf["dev1"][1][0],#com
+                                conf["dev1"][1][1],#baud
+                                timeout=0)
                     if(inp=="2" or inp=="a"):
-                        com2=serial.Serial( *conf["dev2"][1], timeout=0)
+                        com2=serial.Serial(
+                                conf["dev2"][1][0],#com
+                                conf["dev1"][1][1],#baud
+                                timeout=0)
                     dev1.getsFrom,dev1.sendsTo = com1, com2
                     dev2.getsFrom,dev2.sendsTo = com2, com1
                     curr_info=prev_info
